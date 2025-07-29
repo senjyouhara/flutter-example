@@ -18,9 +18,24 @@ class _WebviewPageState extends State<WebviewPage> {
   @override
   void initState() {
     super.initState();
+
+    // 如果直接name = map["title"];在build会获取不到值，因为路由信息获取晚于build 或者在 didChangeDependencies 获取值
+    // WidgetsBinding.instance.addPostFrameCallback((timestamp){
+    //   var map = ModalRoute.of(context)?.settings?.arguments;
+    //   if(map is Map){
+    //     name = map["title"];
+    //     setState(() {});
+    //   }
+    // });
+  }
+
+
+  @override
+  void didChangeDependencies() {
     var map = ModalRoute.of(context)?.settings?.arguments;
     if(map is Map){
       name = map["title"];
+      setState(() {});
     }
   }
 

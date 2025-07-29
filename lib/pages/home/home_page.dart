@@ -17,57 +17,66 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   final images = [
-    Image.asset("assets/1.jpg", fit: BoxFit.cover,),
-    Image.asset("assets/2.jpg", fit: BoxFit.cover,),
-    Image.asset("assets/3.jpg", fit: BoxFit.cover,),
+    Image.asset("assets/1.jpg", fit: BoxFit.cover),
+    Image.asset("assets/2.jpg", fit: BoxFit.cover),
+    Image.asset("assets/3.jpg", fit: BoxFit.cover),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              height: 150.h,
-              child: Swiper(
-                outer: false,
-                autoplayDelay: 5000,
-                itemCount: 3,
-                autoplay: true,
-                loop: true,
-                indicatorLayout: PageIndicatorLayout.NONE,
-                itemBuilder: (context, index) {
-                  return Container(
-                    width: double.infinity,
-                    child: images[index],
-                  );
-                },
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _swiper(),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: 10,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return Container(
+                      padding: EdgeInsets.all(12),
+                      child: GestureDetector(
+                        child: _listItemView(index),
+                        behavior: HitTestBehavior.translucent, // 或 .translucent
+                        onTap: () {
+                          print("路由跳转");
+                          // RouteUtils.push(context, WebviewPage(title: "跳转页面标题"));
+                          RouteUtils.pushNamed(
+                            context,
+                            RoutesPath.webviewPage,
+                            arguments: {"title": "跳转页面标题222"},
+                          );
+                          // Navigator.push(context, MaterialPageRoute(builder: (c) => WebviewPage(title: "跳转页面标题")));
+                        },
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 10,
-                itemBuilder: (context, index) {
-                  return Container(padding: EdgeInsets.all(12),child:
-                  GestureDetector(
-                    child: _listItemView(index),
-                    behavior: HitTestBehavior.translucent, // 或 .translucent
-                    onTap: (){
-                      print("路由跳转");
-                      // RouteUtils.push(context, WebviewPage(title: "跳转页面标题"));
-                      RouteUtils.pushNamed(context, RoutesPath.webviewPage, arguments: {"title": "跳转页面标题222"});
-                      // Navigator.push(context, MaterialPageRoute(builder: (c) => WebviewPage(title: "跳转页面标题")));
-                    },
-                  )
-                  );
-                },
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _swiper() {
+    return Container(
+      height: 150.h,
+      child: Swiper(
+        outer: false,
+        autoplayDelay: 5000,
+        itemCount: 3,
+        autoplay: true,
+        loop: true,
+        indicatorLayout: PageIndicatorLayout.NONE,
+        itemBuilder: (context, index) {
+          return Container(width: double.infinity, child: images[index]);
+        },
       ),
     );
   }
@@ -113,10 +122,15 @@ class _HomePageState extends State<HomePage> {
                 "2025-09-09: 22:22:22",
                 style: TextStyle(fontSize: 16, color: Color(0xff555555)),
               ),
-              SizedBox(width: 12,),
-              TextButton(onPressed: (){
-                print("置顶");
-              }, child: Text("置顶", style: TextStyle(fontSize: 16, color: Colors.blueAccent),),
+              SizedBox(width: 12),
+              TextButton(
+                onPressed: () {
+                  print("置顶");
+                },
+                child: Text(
+                  "置顶",
+                  style: TextStyle(fontSize: 16, color: Colors.blueAccent),
+                ),
                 style: ButtonStyle(
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   minimumSize: WidgetStateProperty.all(Size(0, 0)),
@@ -125,20 +139,32 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          Padding(padding: EdgeInsets.only(top: 10, bottom: 10),
-          child: Text("内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容",
-            maxLines: 2,
-            softWrap: false,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xff555555)),),
+          Padding(
+            padding: EdgeInsets.only(top: 10, bottom: 10),
+            child: Text(
+              "内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容",
+              maxLines: 2,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xff555555),
+              ),
+            ),
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(child: Text("类别", style: TextStyle(fontSize: 16, color: Color(0xffff00ff)),)),
-              Icon(Icons.star, size: 24, color: Color(0xff999999),),
+              Expanded(
+                child: Text(
+                  "类别",
+                  style: TextStyle(fontSize: 16, color: Color(0xffff00ff)),
+                ),
+              ),
+              Icon(Icons.star, size: 24, color: Color(0xff999999)),
             ],
-          )
+          ),
         ],
       ),
     );
