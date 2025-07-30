@@ -31,8 +31,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
               _swiper(),
-              Expanded(
-                child: ListView.builder(
+                ListView.builder(
                   itemCount: 10,
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
@@ -56,7 +55,6 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                 ),
-              ),
             ],
           ),
         ),

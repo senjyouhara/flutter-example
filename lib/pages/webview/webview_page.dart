@@ -13,7 +13,7 @@ class WebviewPage extends StatefulWidget {
 
 class _WebviewPageState extends State<WebviewPage> {
 
-  String name = "";
+  String? name;
 
   @override
   void initState() {
@@ -34,7 +34,7 @@ class _WebviewPageState extends State<WebviewPage> {
   void didChangeDependencies() {
     var map = ModalRoute.of(context)?.settings?.arguments;
     if(map is Map){
-      name = map["title"];
+      this.name = map["title"];
       setState(() {});
     }
   }
@@ -42,7 +42,7 @@ class _WebviewPageState extends State<WebviewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title ?? name),),
+      appBar: AppBar(title: Text(this.name ?? widget.title),),
       body: SafeArea(child: Column(children: [
 
       ])),
