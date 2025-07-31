@@ -1,11 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:example/pages/home/home_model.dart';
 import 'package:example/pages/webview/webview_page.dart';
 import 'package:example/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_swiper_view/flutter_swiper_view.dart';
+import 'package:provider/provider.dart';
 
 import '../../routes/route_utils.dart';
+import 'home_list_model.dart';
+import 'home_vm.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,23 +27,35 @@ class _HomePageState extends State<HomePage> {
     Image.asset("assets/3.jpg", fit: BoxFit.cover),
   ];
 
+  HomeViewModel vm = new HomeViewModel();
+
+  @override
+  void initState() {
+    super.initState();
+    vm.getBanner();
+    vm.getListData();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return ChangeNotifierProvider<HomeViewModel>(create: (context){
+      return vm;
+    }, child: Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
               _swiper(),
-                ListView.builder(
-                  itemCount: 10,
+              Consumer<HomeViewModel>(builder: (context, vm, child){
+                return ListView.builder(
+                  itemCount: vm.listData.length,
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     return Container(
                       padding: EdgeInsets.all(12),
                       child: GestureDetector(
-                        child: _listItemView(index),
+                        child: _listItemView(vm.listData[index], index),
                         behavior: HitTestBehavior.translucent, // 或 .translucent
                         onTap: () {
                           print("路由跳转");
@@ -47,39 +63,44 @@ class _HomePageState extends State<HomePage> {
                           RouteUtils.pushNamed(
                             context,
                             RoutesPath.webviewPage,
-                            arguments: {"title": "跳转页面标题222"},
+                            arguments: {"title": vm.listData[index].title},
                           );
                           // Navigator.push(context, MaterialPageRoute(builder: (c) => WebviewPage(title: "跳转页面标题")));
                         },
                       ),
                     );
                   },
-                ),
+                );
+              })
             ],
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _swiper() {
-    return Container(
-      height: 150.h,
-      child: Swiper(
-        outer: false,
-        autoplayDelay: 5000,
-        itemCount: 3,
-        autoplay: true,
-        loop: true,
-        indicatorLayout: PageIndicatorLayout.NONE,
-        itemBuilder: (context, index) {
-          return Container(width: double.infinity, child: images[index]);
-        },
-      ),
-    );
+    return Consumer<HomeViewModel>(builder: (context, value, child){
+      return Container(
+        height: 150.h,
+        child: Swiper(
+          outer: false,
+          autoplayDelay: 5000,
+          itemCount: value.bannerData.length ?? 0,
+          autoplay: true,
+          loop: true,
+          indicatorLayout: PageIndicatorLayout.NONE,
+          itemBuilder: (context, index) {
+            return Container(width: double.infinity, child: 
+              Image.network(value.bannerData?[index]?.imagePath ?? "", fit: BoxFit.cover,)
+            );
+          },
+        ),
+      );
+    });
   }
 
-  Widget _listItemView(int index) {
+  Widget _listItemView(HomeListData data, int index) {
     return Container(
       padding: EdgeInsets.fromLTRB(12, 18, 12, 18),
       // width: double.infinity,
@@ -112,12 +133,12 @@ class _HomePageState extends State<HomePage> {
               SizedBox(width: 12.w),
               Expanded(
                 child: Text(
-                  "username",
+                  (data.author?.isNotEmpty == true ? data.author : data.shareUser) ?? "",
                   style: TextStyle(fontSize: 16, color: Color(0xff555555)),
                 ),
               ),
               Text(
-                "2025-09-09: 22:22:22",
+                data.niceShareDate!,
                 style: TextStyle(fontSize: 16, color: Color(0xff555555)),
               ),
               SizedBox(width: 12),
@@ -140,7 +161,7 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: EdgeInsets.only(top: 10, bottom: 10),
             child: Text(
-              "内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容内容",
+              data.title!,
               maxLines: 2,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
@@ -156,7 +177,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Expanded(
                 child: Text(
-                  "类别",
+                  data.chapterName!,
                   style: TextStyle(fontSize: 16, color: Color(0xffff00ff)),
                 ),
               ),
