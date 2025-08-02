@@ -138,15 +138,5 @@ class Request {
       );
     }
     return BaseModelEntity<T>.fromJson(response.data);
-
-    // try {
-    //   var model = BaseModel<T>.fromJson(response is Response ? response.data : response);
-    //   return model;
-    // } catch (err){
-    //   log("$err");
-    //   throw err;
-    // }
-
-
   }
 }

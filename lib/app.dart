@@ -1,4 +1,5 @@
 import 'package:example/pages/home/home_page.dart';
+import 'package:example/pages/tabbar_page.dart';
 import 'package:example/routes/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -48,9 +49,9 @@ class MyApp extends StatelessWidget {
               // tested with just a hot reload.
               colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             ),
-            home: const HomePage(),
+            // home: const TabbarPage(),
             onGenerateRoute: Routes.generateRoutes,
-            initialRoute: RoutesPath.home,
+            initialRoute: RoutesPath.index,
           );
         },
       ),

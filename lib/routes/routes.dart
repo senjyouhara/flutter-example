@@ -1,4 +1,5 @@
 import 'package:example/pages/home/home_page.dart';
+import 'package:example/pages/tabbar_page.dart';
 import 'package:flutter/material.dart';
 
 import '../pages/webview/webview_page.dart';
@@ -6,8 +7,8 @@ import '../pages/webview/webview_page.dart';
 class Routes {
   static Route<dynamic> generateRoutes(RouteSettings settings) {
     switch (settings.name) {
-      case RoutesPath.home:
-        return pageRoute(HomePage(), settings: settings);
+      case RoutesPath.index:
+        return pageRoute(TabbarPage(), settings: settings);
       case RoutesPath.webviewPage:
         return pageRoute(WebviewPage(title: "",), settings: settings);
 
@@ -40,7 +41,7 @@ class Routes {
 }
 
 class RoutesPath {
-  static const String home = "/";
+  static const String index = "/";
 
   static const String webviewPage = "/webview";
 }

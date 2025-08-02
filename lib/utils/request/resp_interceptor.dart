@@ -10,7 +10,6 @@ class MyResponseInterceptor extends  Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     if(response.statusCode == 200){
-
       try {
         var model = BaseModelEntity.fromJson(response.data);
         if(model.errorCode == 0){
