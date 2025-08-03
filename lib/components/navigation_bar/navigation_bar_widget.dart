@@ -7,13 +7,16 @@ class LabelIcons {
 
   String? label;
   Widget? icon;
+  Widget? page;
 
   LabelIcons({
     String? label,
-    Widget? icon
+    Widget? icon,
+    Widget? page
 }){
     this.label = label;
     this.icon = icon;
+    this.page = page;
   }
 
 }
@@ -21,13 +24,10 @@ class LabelIcons {
 class NavigationBarWidget extends StatefulWidget {
   const NavigationBarWidget({super.key,
     required this.pages,
-    required this.labels,
     this.onTabChanged,
   });
 
-  final List<Widget> pages;
-
-  final List<LabelIcons> labels;
+  final List<LabelIcons> pages;
 
   final ValueChanged<int>? onTabChanged;
 
@@ -47,7 +47,9 @@ class _NavigationBarWidgetState extends State<NavigationBarWidget> {
       body: SafeArea(
         child: IndexedStack(
           index: index,
-          children: widget.pages,
+          children: widget.pages.map((item){
+            return item.page!;
+          }).toList(),
         ),
       ),
       bottomNavigationBar: Theme(
@@ -67,7 +69,7 @@ class _NavigationBarWidgetState extends State<NavigationBarWidget> {
           showSelectedLabels: true,
           showUnselectedLabels: true,
           type: BottomNavigationBarType.fixed,
-          items:  widget.labels.map((item) => BottomNavigationBarItem(
+          items:  widget.pages.map((item) => BottomNavigationBarItem(
             label: item.label,
             icon: item.icon!,
             tooltip: '',

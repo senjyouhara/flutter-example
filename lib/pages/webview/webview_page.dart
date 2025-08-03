@@ -14,6 +14,7 @@ class WebviewPage extends StatefulWidget {
 class _WebviewPageState extends State<WebviewPage> {
 
   String? name;
+  String? url;
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _WebviewPageState extends State<WebviewPage> {
     var map = ModalRoute.of(context)?.settings?.arguments;
     if(map is Map){
       this.name = map["title"];
+      this.url = map["url"];
       setState(() {});
     }
   }

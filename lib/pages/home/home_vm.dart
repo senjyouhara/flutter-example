@@ -1,31 +1,27 @@
-import 'dart:convert';
-
-import 'package:dio/dio.dart';
 import 'package:example/pages/home/home_top_list_model.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../../utils/request/base_model_entity.dart';
 import '../../utils/request/request.dart';
-import 'home_list_model.dart';
-import 'home_model.dart';
+import 'home_list_model_entity.dart';
+import 'home_model_entity.dart';
 
 class HomeViewModel with ChangeNotifier {
 
-  List<HomeModelData> bannerData = [];
-  List<HomeListData> listData = [];
+  List<HomeModelEntity> bannerData = [];
+  List<HomeListModelDatas> listData = [];
   num pageTotal = 0;
   bool isPageEnd = false;
   List<HomeTopListModel> topListData = [];
 
   Future getBanner()async {
 
-    var res = await Request.get<List<HomeModelData>>("/banner/json");
+    var res = await Request.get<List<HomeModelEntity>>("/banner/json");
     bannerData = res.data ?? [];
     notifyListeners();
   }
 
   Future getListData(num page)async {
-    var res = await Request.get<HomeListDatas>("/article/list/${page - 1}/json");
+    var res = await Request.get<HomeListModelEntity>("/article/list/${page - 1}/json");
 
     if(page == 1){
       listData = res.data?.datas ?? [];

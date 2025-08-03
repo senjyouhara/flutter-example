@@ -9,7 +9,7 @@ class BaseModelEntity<T> {
   String? errorMsg;
   T? data;
 
-  BaseModelEntity({this.errorCode, this.errorMsg, this.data});
+  BaseModelEntity();
 
   BaseModelEntity.fromJson(Map<String, dynamic> json) {
     if (json['data'] != null && json['data'] != 'null') {

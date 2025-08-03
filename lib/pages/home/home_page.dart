@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:example/pages/home/home_model.dart';
 import 'package:example/pages/webview/webview_page.dart';
 import 'package:example/routes/routes.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:provider/provider.dart';
 
 import '../../routes/route_utils.dart';
-import 'home_list_model.dart';
+import 'home_list_model_entity.dart';
 import 'home_vm.dart';
 
 class HomePage extends StatefulWidget {
@@ -139,7 +138,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _listItemView(HomeListData data, int index) {
+  Widget _listItemView(HomeListModelDatas data, int index) {
     return Container(
       padding: EdgeInsets.fromLTRB(12, 18, 12, 18),
       // width: double.infinity,

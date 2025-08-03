@@ -17,26 +17,28 @@ class TabbarPage extends StatefulWidget {
 }
 
 class _TabbarPageState extends State<TabbarPage> {
-  int index = 0;
 
   @override
   Widget build(BuildContext context) {
     return NavigationBarWidget(
-      pages: [HomePage(), HotKeyPage(), KnowledgePage(), PersonalPage()],
-      labels: [
+      pages: [
         LabelIcons(
+          page: HomePage(),
           label: "首页",
           icon: Icon(Icons.home, size: 24.sp),
         ),
         LabelIcons(
+          page: HotKeyPage(),
           label: "热点",
           icon: Icon(Icons.local_fire_department, size: 24.sp),
         ),
         LabelIcons(
+          page: KnowledgePage(),
           label: "体系",
           icon: Icon(Icons.timeline, size: 24.sp),
         ),
         LabelIcons(
+          page: PersonalPage(),
           label: "我的",
           icon: Icon(Icons.person, size: 24.sp),
         ),
