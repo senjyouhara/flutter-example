@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:example/extensions/image_extension.dart';
 import 'package:example/pages/webview/webview_page.dart';
 import 'package:example/routes/routes.dart';
 import 'package:flutter/material.dart';
@@ -85,8 +86,7 @@ class _HomePageState extends State<HomePage> {
                           padding: EdgeInsets.all(12),
                           child: GestureDetector(
                             child: _listItemView(vm.listData[index], index),
-                            behavior:
-                            HitTestBehavior.translucent, // 或 .translucent
+                            behavior: HitTestBehavior.translucent, // 或 .translucent
                             onTap: () {
                               print("路由跳转");
                               // RouteUtils.push(context, WebviewPage(title: "跳转页面标题"));
@@ -162,7 +162,7 @@ class _HomePageState extends State<HomePage> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: Image.asset(
-                  "assets/avatar.jpg",
+                  "avatar.jpg".img,
                   width: 30.w,
                   height: 30.h,
                   fit: BoxFit.cover,

@@ -16,11 +16,11 @@ class MyResponseInterceptor extends  Interceptor {
           handler.next(Response(requestOptions: response.requestOptions, data: response.data));
         } else {
           if(model.errorCode == -1001){
-            handler.reject(DioException(requestOptions: response.requestOptions, message: "未登录"));
             showToast("用户未登录");
+            handler.reject(DioException(requestOptions: response.requestOptions, message: "未登录"));
           } else {
-            handler.reject(DioException(requestOptions: response.requestOptions, message: model.errorMsg?.isNotEmpty == true ? model.errorMsg! : "未知错误"));
             showToast(model.errorMsg?.isNotEmpty == true ? model.errorMsg! : "未知错误");
+            handler.reject(DioException(requestOptions: response.requestOptions, message: model.errorMsg?.isNotEmpty == true ? model.errorMsg! : "未知错误"));
           }
         }
       } catch (err){

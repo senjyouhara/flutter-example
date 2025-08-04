@@ -23,7 +23,6 @@ class _HotKeyPageState extends State<HotKeyPage> {
   @override
   void initState() {
     super.initState();
-    log("2222");
     vm.getFriendData();
     vm.getHotKeyData();
   }

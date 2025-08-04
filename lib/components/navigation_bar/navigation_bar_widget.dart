@@ -42,6 +42,15 @@ class _NavigationBarWidgetState extends State<NavigationBarWidget> {
   int index = 0;
 
   @override
+  void didChangeDependencies() {
+    var map = ModalRoute.of(context)?.settings?.arguments;
+    if(map is Map){
+      this.index = map["index"];
+      setState(() {});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(

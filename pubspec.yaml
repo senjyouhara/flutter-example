@@ -104,7 +104,8 @@ flutter:
   # https://flutter.dev/to/asset-from-package
 
   assets:
-    - assets/
+#    - assets/
+    - assets/images/
 
 
   # To add custom fonts to your application, add a fonts section here,

@@ -35,14 +35,15 @@ class MyRequestInterceptor extends InterceptorsWrapper {
     } else if (e.type == DioExceptionType.receiveTimeout) {
       print(e.hashCode.toString() + "响应超时");
     } else if (e.type == DioExceptionType.badResponse) {
-      print(e.hashCode.toString() + "出现异常404 503");
+      print(e.hashCode.toString() + '服务器响应错误，状态码：${e.response?.statusCode}');
     } else if (e.type == DioExceptionType.cancel) {
       print(e.hashCode.toString() + "请求取消");
+    } else if (e.type == DioExceptionType.connectionError) {
+      print(e.hashCode.toString() + "连接错误");
+    } else if (e.type == DioExceptionType.unknown) {
+      print(e.hashCode.toString() + "未知错误, ${e.message}");
     } else {
       print("message =${e.message}");
     }
   }
-
-
-
 }
