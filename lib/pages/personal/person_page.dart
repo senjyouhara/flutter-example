@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../routes/route_utils.dart';
 import '../../routes/routes.dart';
+import '../login/login_vm.dart';
 
 class PersonalPage extends StatefulWidget {
   const PersonalPage({super.key});
@@ -21,10 +22,10 @@ class _PersonalPageState extends State<PersonalPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<PersonViewModel>(
-      create: (context) {
-        return vm;
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<PersonViewModel>(create: (context) => vm),
+      ],
       child: Scaffold(
         body: SafeArea(
           child: SingleChildScrollView(
@@ -36,64 +37,83 @@ class _PersonalPageState extends State<PersonalPage> {
   }
 
   Widget _userInfo() {
-    return Container(
-      alignment: Alignment.center,
-      height: 180.h,
-      decoration: BoxDecoration(color: Color(0xff018b7d)),
-      child: FractionallySizedBox(
-        heightFactor: 1,
-        child: GestureDetector(
-          onTap: (){
-            RouteUtils.pushNamed(
-              context,
-              RoutesPath.loginPage,
-              arguments: {},
-            );
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: Image.asset(
-                  "anonymous.jpg".img,
-                  fit: BoxFit.cover,
-                  width: 50.w,
-                  height: 50.h,
+    return Consumer<LoginViewModel>(
+      builder: (context, vm, child){
+        return Container(
+            alignment: Alignment.center,
+            height: 180.h,
+            decoration: BoxDecoration(color: Color(0xff018b7d)),
+            child: FractionallySizedBox(
+              heightFactor: 1,
+              child: GestureDetector(
+                onTap: (){
+                  if(vm.userInfo == null){
+                    RouteUtils.pushNamed(
+                      context,
+                      RoutesPath.loginPage,
+                      arguments: {},
+                    );
+                  }
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child: Image.asset(
+                        "anonymous.jpg".img,
+                        fit: BoxFit.cover,
+                        width: 50.w,
+                        height: 50.h,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 10),
+                      child: Text(
+                        vm.userInfo?.username ?? "未登录",
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 10),
-                child: Text(
-                  "未登录",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
-            ],
-          ),
-        ),
-      )
+            )
+        );
+      },
     );
   }
 
   Widget _userMenus() {
-    return Container(
-      padding: EdgeInsets.all(10.w),
-      child: Column(
-        spacing: 8.w,
-        children: [
-          getMenu("我的收藏", onTap: (){
+    return Consumer<LoginViewModel>(builder: (context, vm, child){
+      return Container(
+        padding: EdgeInsets.all(10.w),
+        child: Column(
+          spacing: 8.w,
+          children: [
+            vm.userInfo != null ? getMenu("我的收藏", onTap: (){
+              RouteUtils.pushNamed(
+                context,
+                RoutesPath.favoritePage,
+                arguments: {},
+              );
+            }) : SizedBox(),
+            getMenu("检查更新", onTap: (){
 
-          }),
-          getMenu("检查更新", onTap: (){
+            }),
+            getMenu("关于我们", onTap: (){
 
-          }),
-          getMenu("关于我们", onTap: (){
-
-          }),
-        ],
-      ),
-    );
+            }),
+            vm.userInfo != null ? getMenu("退出登录", onTap: (){
+              try {
+                vm.logout();
+              } catch (e){
+                print("err ${e}");
+              }
+            }) : SizedBox(),
+          ],
+        ),
+      );
+    });
   }
 
   Widget getMenu(String title, {GestureTapCallback? onTap}){

@@ -1,4 +1,5 @@
 import 'package:example/pages/login/login_page.dart';
+import 'package:example/pages/personal/favorite/favorite_page.dart';
 import 'package:example/pages/register/register_page.dart';
 import 'package:example/pages/search/search_page.dart';
 import 'package:example/pages/tabbar_page.dart';
@@ -19,6 +20,8 @@ class Routes {
         return pageRoute(RegisterPage(), settings: settings);
       case RoutesPath.loginPage:
         return pageRoute(LoginPage(), settings: settings);
+      case RoutesPath.favoritePage:
+        return pageRoute(FavoritePage(), settings: settings);
 
       default:
         return pageRoute(
@@ -71,4 +74,6 @@ class RoutesPath {
   static const String loginPage = "/login";
 
   static const String registerPage = "/register";
+
+  static const String favoritePage = "/favorite";
 }

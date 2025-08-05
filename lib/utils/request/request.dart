@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:example/utils/request/cookie_interceptor.dart';
 import 'package:example/utils/request/request_interceptor.dart';
 import 'package:example/utils/request/resp_interceptor.dart';
 
@@ -99,6 +100,11 @@ class Request {
       baseUrl: _baseUrl,
       method: method,
     );
+    dio.interceptors.add(LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+    ));
+    dio.interceptors.add(CookieInterceptor());
     dio.interceptors.add(MyRequestInterceptor());
     dio.interceptors.add(MyResponseInterceptor());
 

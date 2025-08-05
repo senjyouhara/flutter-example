@@ -13,6 +13,11 @@ class HomeViewModel with ChangeNotifier {
   bool isPageEnd = false;
   List<HomeTopListModel> topListData = [];
 
+  Future updateListData(HomeListModelDatas item,int index)async{
+    listData[index] = item;
+    notifyListeners();
+  }
+
   Future getBanner()async {
 
     var res = await Request.get<List<HomeModelEntity>>("/banner/json");
@@ -38,6 +43,22 @@ class HomeViewModel with ChangeNotifier {
     var res = await Request.get<List<HomeTopListModel>>("/article/top/json");
     topListData = res.data ?? [];
     notifyListeners();
+  }
+
+  Future collectInnerPost(String id)async {
+    return Request.post("/lg/collect/${id}/json");
+  }
+
+  Future collectOuterPost(String title, String author, String link)async {
+    return Request.post("/lg/collect/add/json", queryParameters: {
+      "title": title,
+      "author": author,
+      "link": link,
+    });
+  }
+
+  Future delCollectPost(String id)async {
+    return Request.post("/lg/uncollect_originId/${id}/json");
   }
 
 }

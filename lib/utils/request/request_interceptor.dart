@@ -8,22 +8,30 @@ class MyRequestInterceptor extends InterceptorsWrapper {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    super.onRequest(options, handler);
-
+    // 记录请求信息
+    print("Request to: ${options.uri}");
+    print("Headers: ${options.headers}");
+    print("Body: ${options.data}");
+    handler.next(options);
   }
 
   @override
   void onResponse(Response<dynamic> response,
       ResponseInterceptorHandler handler) {
-    log("response  path: ${response.realUri.path}, data: ${response.data}");
-    super.onResponse(response, handler);
+    // 记录响应信息
+    print("Response from: ${response.requestOptions.uri}");
+    print("Status code: ${response.statusCode}");
+    print("Data: ${response.data}");
+    handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    log("response error  path: ${err.response?.realUri.path}, error: ${err}");
+    // 记录错误信息
+    print("Error: ${err.message}");
+    print("Error type: ${err.type}");
     formatError(err);
-    super.onError(err, handler);
+    handler.next(err);
   }
 
   ///  error统一处理
