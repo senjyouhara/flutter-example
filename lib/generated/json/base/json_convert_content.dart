@@ -10,6 +10,7 @@ import 'package:example/pages/home/home_top_list_model.dart';
 import 'package:example/pages/hot_key/friend_model_entity.dart';
 import 'package:example/pages/hot_key/hot_key_model_entity.dart';
 import 'package:example/pages/login/login_model_entity.dart';
+import 'package:example/pages/search/search_model_entity.dart';
 import 'package:example/utils/request/base_model_entity.dart';
 
 JsonConvert jsonConvert = JsonConvert();
@@ -180,6 +181,18 @@ class JsonConvert {
       return data.map<LoginModelEntity>((Map<String, dynamic> e) =>
           LoginModelEntity.fromJson(e)).toList() as M;
     }
+    if (<SearchModelEntity>[] is M) {
+      return data.map<SearchModelEntity>((Map<String, dynamic> e) =>
+          SearchModelEntity.fromJson(e)).toList() as M;
+    }
+    if (<SearchModelDatas>[] is M) {
+      return data.map<SearchModelDatas>((Map<String, dynamic> e) =>
+          SearchModelDatas.fromJson(e)).toList() as M;
+    }
+    if (<SearchModelDatasTags>[] is M) {
+      return data.map<SearchModelDatasTags>((Map<String, dynamic> e) =>
+          SearchModelDatasTags.fromJson(e)).toList() as M;
+    }
     if (<BaseModelEntity>[] is M) {
       return data.map<BaseModelEntity>((Map<String, dynamic> e) =>
           BaseModelEntity.fromJson(e)).toList() as M;
@@ -213,6 +226,9 @@ class JsonConvertClassCollection {
     (FriendModelEntity).toString(): FriendModelEntity.fromJson,
     (HotKeyModelEntity).toString(): HotKeyModelEntity.fromJson,
     (LoginModelEntity).toString(): LoginModelEntity.fromJson,
+    (SearchModelEntity).toString(): SearchModelEntity.fromJson,
+    (SearchModelDatas).toString(): SearchModelDatas.fromJson,
+    (SearchModelDatasTags).toString(): SearchModelDatasTags.fromJson,
     (BaseModelEntity).toString(): BaseModelEntity.fromJson,
   };
 

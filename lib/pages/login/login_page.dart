@@ -1,10 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 
+import '../../components/loading.dart';
 import '../../constants/Sp_constants.dart';
 import '../../routes/route_utils.dart';
 import '../../routes/routes.dart';
@@ -43,13 +45,18 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void onLogin() async {
+    // 隐藏软键盘
+    // SystemChannels.textInput.invokeMethod("TextInput.hide");
+    FocusScope.of(context).unfocus();
     if (_logic.formKey.currentState!.validate()) {
       try {
+        Loading.showLoading();
         final result = await context.read<LoginViewModel>().login(
           _logic.userName,
           _logic.password,
         );
         print("result: ${result}");
+        Loading.dismissAll();
         showToast("登录成功");
         SpUtil.setMap(SpConstants.userInfo, result.toJson());
         RouteUtils.pushReplacementNamed(
@@ -61,6 +68,7 @@ class _LoginPageState extends State<LoginPage> {
         );
       } catch (e) {
         print("err: ${e}");
+        Loading.dismissAll();
       }
     }
   }

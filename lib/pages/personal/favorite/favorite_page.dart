@@ -5,6 +5,7 @@ import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../../components/loading.dart';
 import '../../../components/postItem.dart';
 import '../../../routes/route_utils.dart';
 import '../../../routes/routes.dart';
@@ -47,8 +48,14 @@ class _FavoritePageState extends State<FavoritePage> {
   }
 
   @override
-  void didChangeDependencies() {
-    vm.getListData(_page);
+  void didChangeDependencies() async {
+    Loading.showLoading();
+    try {
+      await vm.getListData(_page);
+    } catch (e) {
+
+    }
+    Loading.dismissAll();
   }
 
   @override

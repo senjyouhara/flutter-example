@@ -23,22 +23,22 @@ class _TabbarPageState extends State<TabbarPage> {
     return NavigationBarWidget(
       pages: [
         LabelIcons(
-          page: HomePage(),
+          page: const HomePage(),
           label: "首页",
           icon: Icon(Icons.home, size: 24.sp),
         ),
         LabelIcons(
-          page: HotKeyPage(),
+          page: const HotKeyPage(),
           label: "热点",
           icon: Icon(Icons.local_fire_department, size: 24.sp),
         ),
         LabelIcons(
-          page: KnowledgePage(),
+          page: const KnowledgePage(),
           label: "体系",
           icon: Icon(Icons.timeline, size: 24.sp),
         ),
         LabelIcons(
-          page: PersonalPage(),
+          page: const PersonalPage(),
           label: "我的",
           icon: Icon(Icons.person, size: 24.sp),
         ),

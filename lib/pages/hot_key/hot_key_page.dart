@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
+import '../../components/loading.dart';
 import '../../routes/route_utils.dart';
 import '../../routes/routes.dart';
 
@@ -21,10 +22,25 @@ class _HotKeyPageState extends State<HotKeyPage> {
   HotKeyViewModel vm = HotKeyViewModel();
 
   @override
-  void initState() {
-    super.initState();
-    vm.getFriendData();
-    vm.getHotKeyData();
+  void didChangeDependencies() {
+    init();
+  }
+
+  void init() async {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp){
+      Loading.showLoading();
+    });
+    try {
+      await vm.getFriendData();
+    } catch (e) {
+
+    }
+    try {
+      await vm.getHotKeyData();
+    } catch (e) {
+
+    }
+    Loading.dismissAll();
   }
 
   @override
@@ -123,17 +139,17 @@ class _HotKeyPageState extends State<HotKeyPage> {
         childAspectRatio: 1.7.r,
       ),
       itemBuilder: (context, index) {
-        return Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.all(10.w),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(10.r)),
-            border: Border.all(color: Colors.grey),
-          ),
-          child: GestureDetector(
-            onTap: (){
-              onTap?.call(list[index], index);
-            },
+        return GestureDetector(
+          onTap: (){
+            onTap?.call(list[index], index);
+          },
+          child: Container(
+            alignment: Alignment.center,
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(10.r)),
+              border: Border.all(color: Colors.grey),
+            ),
             child: Text(list[index] ?? ""),
           ),
         );

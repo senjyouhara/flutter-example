@@ -3,10 +3,12 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:example/pages/register/register_vm.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 
+import '../../components/loading.dart';
 import '../../routes/route_utils.dart';
 import '../../routes/routes.dart';
 
@@ -36,7 +38,11 @@ class _RegisterPageState extends State<RegisterPage> {
   final vm = RegisterViewModel();
 
   void onLogin() async {
+    // 隐藏软键盘
+    // SystemChannels.textInput.invokeMethod("TextInput.hide");
+    FocusScope.of(context).unfocus();
     if (_logic.formKey.currentState!.validate()) {
+      Loading.showLoading();
       try {
         final result = await vm.register(
           _logic.userName,
@@ -51,6 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
       } on DioException catch (e){
         print("err: ${e}");
       }
+      Loading.dismissAll();
     }
   }
 

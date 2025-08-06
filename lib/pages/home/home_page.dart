@@ -10,6 +10,7 @@ import 'package:oktoast/oktoast.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:provider/provider.dart';
 
+import '../../components/loading.dart';
 import '../../components/postItem.dart';
 import '../../routes/route_utils.dart';
 import 'home_list_model_entity.dart';
@@ -31,10 +32,27 @@ class _HomePageState extends State<HomePage> {
   int _page = 1;
 
   @override
-  void initState() {
-    super.initState();
-    vm.getBanner();
-    vm.getListData(_page);
+  void didChangeDependencies() {
+   init();
+  }
+
+  void init() async {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp){
+      Loading.showLoading();
+    });
+    try {
+      await vm.getBanner();
+    } catch (e) {
+
+    }
+
+    try {
+      await vm.getListData(_page);
+    } catch (e) {
+
+    }
+    Loading.dismissAll();
+
   }
 
   void _onRefresh() async {
