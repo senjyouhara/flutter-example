@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../components/loading.dart';
+import '../../routes/routes.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -21,6 +22,7 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
 
+  FocusNode  focusNode = new FocusNode();
   String name = "";
   final SearchValueController = TextEditingController();
   final vm = SearchViewModel();
@@ -48,18 +50,22 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   @override
-  void didChangeDependencies() {
-    var map = ModalRoute.of(context)?.settings?.arguments;
-    if(map is Map){
-      if(map["title"]?.toString().isNotEmpty == true){
-        this.name = map["title"];
-        SearchValueController.text = map["title"];
-        setState(() {});
-        Loading.showLoading();
-        onSearch(this.name);
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp){
+      var map = ModalRoute.of(context)?.settings?.arguments;
+      if(map is Map){
+        if(map["title"]?.toString().isNotEmpty == true){
+          this.name = map["title"];
+          SearchValueController.text = map["title"];
+          setState(() {});
+          Loading.showLoading();
+          onSearch(this.name);
+        } else {
+          FocusScope.of(context).requestFocus(focusNode);
+        }
       }
-    }
-
+    });
   }
 
   void onSearch(String value) async {
@@ -125,6 +131,7 @@ class _SearchPageState extends State<SearchPage> {
               SearchValueController.text = val;
               name = val;
             },
+            focusNode: focusNode,
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.search,
             onFieldSubmitted: onSearch,
@@ -169,7 +176,11 @@ class _SearchPageState extends State<SearchPage> {
           itemBuilder: (context, index) {
             return GestureDetector(
               onTap: (){
-
+                RouteUtils.pushNamed(
+                  context,
+                  RoutesPath.webviewPage,
+                  arguments: {"title": vm.searchList[index].title?.replaceAll(RegExp(r"<[^>]*>"), ""), "url": vm.searchList[index].link},
+                );
               },
               child: Container(
                 decoration: BoxDecoration(

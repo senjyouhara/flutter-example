@@ -4,10 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:oktoast/oktoast.dart';
 
 class Loading {
-
   Loading._();
 
-  static void showLoading() async {
+  static void showLoading({Duration? duration, String? title}) async {
     showToastWidget(
       Container(
         color: Colors.transparent,
@@ -20,15 +19,32 @@ class Loading {
               borderRadius: BorderRadius.circular(10.r),
               color: Colors.black54,
             ),
-            child: CircularProgressIndicator(
-              strokeWidth: 2.w,
-              valueColor: AlwaysStoppedAnimation(Colors.white),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  strokeWidth: 2.w,
+                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                ),
+                ?(title?.isNotEmpty == true
+                    ? Padding(
+                        padding: EdgeInsets.only(top: 12.h),
+                        child: Text(
+                          title ?? "",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14.sp,
+                          ),
+                        ),
+                      )
+                    : null),
+              ],
             ),
           ),
         ),
       ),
       handleTouch: true,
-      duration: Duration(days: 1),
+      duration: duration ?? Duration(days: 1),
     );
   }
 

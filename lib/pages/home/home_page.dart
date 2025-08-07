@@ -32,27 +32,27 @@ class _HomePageState extends State<HomePage> {
   int _page = 1;
 
   @override
-  void didChangeDependencies() {
+  void initState() {
+    super.initState();
    init();
   }
 
   void init() async {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp){
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       Loading.showLoading();
+      try {
+        await vm.getBanner();
+      } catch (e) {
+
+      }
+
+      try {
+        await vm.getListData(_page);
+      } catch (e) {
+
+      }
+      Loading.dismissAll();
     });
-    try {
-      await vm.getBanner();
-    } catch (e) {
-
-    }
-
-    try {
-      await vm.getListData(_page);
-    } catch (e) {
-
-    }
-    Loading.dismissAll();
-
   }
 
   void _onRefresh() async {
@@ -132,7 +132,8 @@ class _HomePageState extends State<HomePage> {
                                     context,
                                     RoutesPath.webviewPage,
                                     arguments: {
-                                      "title": vm.listData[index].title
+                                      "title": vm.listData[index].title,
+                                      "url": vm.listData[index].link,
                                     },
                                   );
                                   // Navigator.push(context, MaterialPageRoute(builder: (c) => WebviewPage(title: "跳转页面标题")));

@@ -37,7 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _logic = FormStateLogic();
   final vm = RegisterViewModel();
 
-  void onLogin() async {
+  void onSubmit() async {
     // 隐藏软键盘
     // SystemChannels.textInput.invokeMethod("TextInput.hide");
     FocusScope.of(context).unfocus();
@@ -98,6 +98,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         cursorColor: Colors.white,
                         style: TextStyle(color: Colors.white, fontSize: 14.sp),
                         decoration: textFormCommonInputDecoration("用户名"),
+                        textInputAction: TextInputAction.next,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(20),
+                          FilteringTextInputFormatter.deny(RegExp(r"\s*"))
+                        ],
                         validator: (value) {
                           if (value == "" ||
                               value == null ||
@@ -117,6 +122,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         cursorColor: Colors.white,
                         style: TextStyle(color: Colors.white, fontSize: 14.sp),
                         decoration: textFormCommonInputDecoration("密码"),
+                        textInputAction: TextInputAction.next,
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(20),
+                          FilteringTextInputFormatter.deny(RegExp(r"\s*"))
+                        ],
                         validator: (value) {
                           if (value == null ||
                               value.isEmpty ||
@@ -136,6 +146,14 @@ class _RegisterPageState extends State<RegisterPage> {
                         cursorColor: Colors.white,
                         style: TextStyle(color: Colors.white, fontSize: 14.sp),
                         decoration: textFormCommonInputDecoration("确认密码"),
+                        textInputAction: TextInputAction.none,
+                        onEditingComplete: (){
+                          onSubmit();
+                        },
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(20),
+                          FilteringTextInputFormatter.deny(RegExp(r"\s*"))
+                        ],
                         validator: (value) {
                           if (value == null ||
                               value.isEmpty ||
@@ -152,7 +170,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       FractionallySizedBox(
                         widthFactor: 1,
                         child: OutlinedButton(
-                          onPressed: onLogin,
+                          onPressed: onSubmit,
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: Colors.white), // 修改边框颜色
                             padding: EdgeInsets.all(16),

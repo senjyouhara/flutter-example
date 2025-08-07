@@ -44,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
   }
 
-  void onLogin() async {
+  void onSubmit() async {
     // 隐藏软键盘
     // SystemChannels.textInput.invokeMethod("TextInput.hide");
     FocusScope.of(context).unfocus();
@@ -104,6 +104,11 @@ class _LoginPageState extends State<LoginPage> {
                         _logic.userName = val;
                       },
                       cursorColor: Colors.white,
+                      textInputAction: TextInputAction.next,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(20),
+                        FilteringTextInputFormatter.deny(RegExp(r"\s*"))
+                      ],
                       style: TextStyle(color: Colors.white, fontSize: 14.sp),
                       decoration: textFormCommonInputDecoration("用户名"),
                       validator: (value) {
@@ -122,6 +127,14 @@ class _LoginPageState extends State<LoginPage> {
                         _logic.PasswordController.text = val;
                         _logic.password = val;
                       },
+                      textInputAction: TextInputAction.none,
+                      onEditingComplete: (){
+                        onSubmit();
+                      },
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(20),
+                        FilteringTextInputFormatter.deny(RegExp(r"\s*"))
+                      ],
                       cursorColor: Colors.white,
                       style: TextStyle(color: Colors.white, fontSize: 14.sp),
                       decoration: textFormCommonInputDecoration("密码"),
@@ -137,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
                     FractionallySizedBox(
                       widthFactor: 1,
                       child: OutlinedButton(
-                        onPressed: onLogin,
+                        onPressed: onSubmit,
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: Colors.white), // 修改边框颜色
                           padding: EdgeInsets.all(16),

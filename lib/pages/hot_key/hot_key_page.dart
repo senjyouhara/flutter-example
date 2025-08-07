@@ -22,25 +22,27 @@ class _HotKeyPageState extends State<HotKeyPage> {
   HotKeyViewModel vm = HotKeyViewModel();
 
   @override
-  void didChangeDependencies() {
+  void initState() {
+    super.initState();
     init();
   }
 
   void init() async {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp){
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       Loading.showLoading();
+      try {
+        await vm.getFriendData();
+      } catch (e) {
+
+      }
+      try {
+        await vm.getHotKeyData();
+      } catch (e) {
+
+      }
+      Loading.dismissAll();
     });
-    try {
-      await vm.getFriendData();
-    } catch (e) {
 
-    }
-    try {
-      await vm.getHotKeyData();
-    } catch (e) {
-
-    }
-    Loading.dismissAll();
   }
 
   @override
@@ -81,7 +83,13 @@ class _HotKeyPageState extends State<HotKeyPage> {
             ),
             GestureDetector(
               child: Icon(Icons.search, size: 24, color: Colors.black),
-              onTap: () {},
+              onTap: () {
+                RouteUtils.pushNamed(
+                  context,
+                  RoutesPath.searchPage,
+                  arguments: {},
+                );
+              },
             ),
           ],
         ),
