@@ -1,6 +1,7 @@
 import 'package:example/extensions/image_extension.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../pages/home/home_list_model_entity.dart';
 
@@ -86,17 +87,21 @@ class PostItemWidget extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.only(top: 10, bottom: 10),
-            child: Text(
-              data.title!,
-              maxLines: 2,
-              softWrap: false,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w500,
-                color: Color(0xff555555),
-              ),
-            ),
+            child:
+            Html(data: data.title ?? "", style: {
+              'html': Style(fontSize: FontSize(14.sp)),
+            }),
+            // Text(
+            //   data.title!,
+            //   maxLines: 2,
+            //   softWrap: false,
+            //   overflow: TextOverflow.ellipsis,
+            //   style: TextStyle(
+            //     fontSize: 16.sp,
+            //     fontWeight: FontWeight.w500,
+            //     color: Color(0xff555555),
+            //   ),
+            // ),
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,

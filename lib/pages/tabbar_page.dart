@@ -1,6 +1,6 @@
 import 'package:example/pages/home/home_page.dart';
 import 'package:example/pages/hot_key/hot_key_page.dart';
-import 'package:example/pages/knowledge/person_page.dart';
+import 'package:example/pages/knowledge/knowledge_page.dart';
 import 'package:example/pages/personal/person_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

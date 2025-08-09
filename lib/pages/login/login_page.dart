@@ -7,6 +7,7 @@ import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 
 import '../../components/loading.dart';
+import '../../config.dart';
 import '../../constants/Sp_constants.dart';
 import '../../routes/route_utils.dart';
 import '../../routes/routes.dart';
@@ -37,11 +38,13 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    _logic.userName = "a7790";
-    _logic.UsernameController.text = "a7790";
-    _logic.password = "a77901";
-    _logic.PasswordController.text = "a77901";
     super.initState();
+    if(inProduction){
+      _logic.userName = "a7790";
+      _logic.UsernameController.text = "a7790";
+      _logic.password = "a77901";
+      _logic.PasswordController.text = "a77901";
+    }
   }
 
   void onSubmit() async {

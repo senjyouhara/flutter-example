@@ -5,9 +5,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../components/wbview/base_webview_widget.dart';
 
 class WebviewPage extends StatefulWidget {
-  final String title;
+  final String? title;
 
-  const WebviewPage({super.key, required this.title});
+  const WebviewPage({super.key, this.title});
 
   @override
   State<WebviewPage> createState() {

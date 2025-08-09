@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
+import 'dart:io' as io;
 
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:example/utils/request/cookie_interceptor.dart';
 import 'package:example/utils/request/request_interceptor.dart';
 import 'package:example/utils/request/resp_interceptor.dart';
-
+import 'package:flutter/services.dart';
 import 'base_model_entity.dart';
 
 class Request {
@@ -22,6 +25,7 @@ class Request {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
   }) {
     return _request<T>(
       url,
@@ -30,6 +34,7 @@ class Request {
       queryParameters: queryParameters,
       options: options,
       cancelToken: cancelToken,
+      onReceiveProgress: onReceiveProgress,
     );
   }
 
@@ -39,6 +44,8 @@ class Request {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
   }) {
     return _request<T>(
       url,
@@ -47,6 +54,8 @@ class Request {
       queryParameters: queryParameters,
       options: options,
       cancelToken: cancelToken,
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
     );
   }
 
@@ -56,6 +65,7 @@ class Request {
     Map<String, dynamic>? queryParameters,
     Options? options,
     CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
   }) {
     return _request<T>(
       url,
@@ -64,6 +74,7 @@ class Request {
       queryParameters: queryParameters,
       options: options,
       cancelToken: cancelToken,
+      onReceiveProgress: onReceiveProgress,
     );
   }
 
@@ -84,13 +95,40 @@ class Request {
     );
   }
 
+  static Future<BaseModelEntity<T>> download<T>(
+    String url, {
+    String? method = "GET",
+    Object? data,
+    dynamic? savePath,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
+  }) {
+    return _request<T>(
+      url,
+      "DOWNLOAD",
+      savePath: savePath,
+      method: method,
+      data: data,
+      queryParameters: queryParameters,
+      options: options,
+      cancelToken: cancelToken,
+      onReceiveProgress: onReceiveProgress,
+    );
+  }
+
   static Future<BaseModelEntity<T>> _request<T>(
     String url,
-    String method, {
+    String type, {
+    String? method,
+    dynamic? savePath,
     Map<String, dynamic>? queryParameters,
     Object? data,
     Options? options,
     CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
   }) async {
     Dio dio = Dio();
     dio.options = BaseOptions(
@@ -98,41 +136,56 @@ class Request {
       sendTimeout: Duration(seconds: _timeout),
       receiveTimeout: Duration(seconds: _timeout),
       baseUrl: _baseUrl,
-      method: method,
+      // method: method ?? type,
     );
-    dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-    ));
+    dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
     dio.interceptors.add(CookieInterceptor());
     dio.interceptors.add(MyRequestInterceptor());
     dio.interceptors.add(MyResponseInterceptor());
+    // initAdapter(dio);
 
     Response response;
 
-    if (method == "GET") {
+    if (type == "GET") {
       response = await dio.get(
         url,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
+        onReceiveProgress: onReceiveProgress,
       );
-    } else if (method == "PUT") {
+    } else if (type == "PUT") {
       response = await dio.put(
         url,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
       );
-    } else if (method == "DELETE") {
+    } else if (type == "DELETE") {
       response = await dio.delete(
         url,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
+      );
+    } else if (type == "DOWNLOAD") {
+      response = await dio.download(
+        url,
+        savePath!,
+        data: data,
+        queryParameters: queryParameters,
+        options: (options ?? Options()).copyWith(
+            responseType: options?.responseType ?? ResponseType.bytes,
+            // followRedirects: false,
+            method: options?.method ?? method,
+        ),
+        cancelToken: cancelToken,
+        onReceiveProgress: onReceiveProgress,
       );
     } else {
       response = await dio.post(
@@ -141,8 +194,52 @@ class Request {
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
       );
     }
+
+    if(url.startsWith("http")){
+      var model = BaseModelEntity<T>();
+      if(![ResponseType.json, ResponseType.plain].contains(response.requestOptions.responseType)) {
+        return model;
+      }
+      model.data = response.data;
+      return model;
+    }
+
     return BaseModelEntity<T>.fromJson(response.data);
+  }
+
+  static void initAdapter(Dio dio) {
+    // 是否允许不良证书
+    var allowBadCert = true;
+    // 是否使用受信任的根证书。
+    var withTrustedRoots = true;
+    // 受信任的证书列表。
+    List<ByteData> trustedCertificates = const [];
+    (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = (){
+      final client = HttpClient();
+      client.findProxy = (url) {
+        return "PROXY 192.168.0.102:8888";
+      };
+      // 设置不良证书的回调函数，允许不良证书时返回 true 。
+      client.badCertificateCallback = (cert, host, port) {
+        return allowBadCert;
+      };
+      // 如果允许不良证书，直接返回创建的客户端。
+      if(allowBadCert){
+        return client;
+      }
+      // 否则，创建一个  SecurityContext ，并设置受信任的证书。
+      SecurityContext securityContext =
+      SecurityContext(withTrustedRoots: withTrustedRoots);
+      for (var certificateBytes in trustedCertificates) {
+        securityContext
+            .setTrustedCertificatesBytes(certificateBytes.buffer.asUint8List());
+      }
+      io.HttpClient httpClient = io.HttpClient(context: securityContext);
+      return httpClient;
+    };
   }
 }

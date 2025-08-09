@@ -9,6 +9,8 @@ import 'package:example/pages/home/home_model_entity.dart';
 import 'package:example/pages/home/home_top_list_model.dart';
 import 'package:example/pages/hot_key/friend_model_entity.dart';
 import 'package:example/pages/hot_key/hot_key_model_entity.dart';
+import 'package:example/pages/knowledge/knowledge_menuTree_model_entity.dart';
+import 'package:example/pages/knowledge/knowledge_model_entity.dart';
 import 'package:example/pages/login/login_model_entity.dart';
 import 'package:example/pages/search/search_model_entity.dart';
 import 'package:example/utils/request/base_model_entity.dart';
@@ -177,6 +179,18 @@ class JsonConvert {
       return data.map<HotKeyModelEntity>((Map<String, dynamic> e) =>
           HotKeyModelEntity.fromJson(e)).toList() as M;
     }
+    if (<KnowledgeMenuTreeModelEntity>[] is M) {
+      return data.map<KnowledgeMenuTreeModelEntity>((Map<String, dynamic> e) =>
+          KnowledgeMenuTreeModelEntity.fromJson(e)).toList() as M;
+    }
+    if (<KnowledgeModelEntity>[] is M) {
+      return data.map<KnowledgeModelEntity>((Map<String, dynamic> e) =>
+          KnowledgeModelEntity.fromJson(e)).toList() as M;
+    }
+    if (<KnowledgeModelDatas>[] is M) {
+      return data.map<KnowledgeModelDatas>((Map<String, dynamic> e) =>
+          KnowledgeModelDatas.fromJson(e)).toList() as M;
+    }
     if (<LoginModelEntity>[] is M) {
       return data.map<LoginModelEntity>((Map<String, dynamic> e) =>
           LoginModelEntity.fromJson(e)).toList() as M;
@@ -225,6 +239,10 @@ class JsonConvertClassCollection {
     (HomeTopListModel).toString(): HomeTopListModel.fromJson,
     (FriendModelEntity).toString(): FriendModelEntity.fromJson,
     (HotKeyModelEntity).toString(): HotKeyModelEntity.fromJson,
+    (KnowledgeMenuTreeModelEntity).toString(): KnowledgeMenuTreeModelEntity
+        .fromJson,
+    (KnowledgeModelEntity).toString(): KnowledgeModelEntity.fromJson,
+    (KnowledgeModelDatas).toString(): KnowledgeModelDatas.fromJson,
     (LoginModelEntity).toString(): LoginModelEntity.fromJson,
     (SearchModelEntity).toString(): SearchModelEntity.fromJson,
     (SearchModelDatas).toString(): SearchModelDatas.fromJson,
