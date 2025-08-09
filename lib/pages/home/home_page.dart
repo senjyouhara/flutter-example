@@ -85,7 +85,6 @@ class _HomePageState extends State<HomePage> {
       },
       child: Scaffold(
         body: SafeArea(
-            bottom: false,
             child: SmartRefresher(
               controller: _refreshController,
               enablePullDown: true,

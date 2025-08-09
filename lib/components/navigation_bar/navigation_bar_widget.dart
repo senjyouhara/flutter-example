@@ -53,14 +53,11 @@ class _NavigationBarWidgetState extends State<NavigationBarWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: IndexedStack(
-          index: index,
-          children: widget.pages.map((item){
-            return item.page!;
-          }).toList(),
-        ),
+      body: IndexedStack(
+        index: index,
+        children: widget.pages.map((item){
+          return item.page!;
+        }).toList(),
       ),
       bottomNavigationBar: Theme(
         data: ThemeData(

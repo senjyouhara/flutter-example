@@ -32,13 +32,14 @@ class _PersonalPageState extends State<PersonalPage> {
 
   @override
   Widget build(BuildContext context) {
+    double statusBarHeight = MediaQuery.of(context).padding.top;
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<PersonViewModel>(create: (context) => vm),
       ],
       child: Scaffold(
         body: SafeArea(
-          bottom: false,
+          top: false,
           child: SingleChildScrollView(
             child: Column(children: [_userInfo(), _userMenus()]),
           ),
@@ -48,12 +49,14 @@ class _PersonalPageState extends State<PersonalPage> {
   }
 
   Widget _userInfo() {
+    double statusBarHeight = MediaQuery.of(context).padding.top;
     return Consumer<LoginViewModel>(
       builder: (context, vm, child) {
         return Container(
           alignment: Alignment.center,
           height: 180.h,
           decoration: BoxDecoration(color: Color(0xff018b7d)),
+          padding: EdgeInsets.only(top: statusBarHeight),
           child: FractionallySizedBox(
             heightFactor: 1,
             child: GestureDetector(
