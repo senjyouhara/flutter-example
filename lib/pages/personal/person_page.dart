@@ -38,6 +38,7 @@ class _PersonalPageState extends State<PersonalPage> {
       ],
       child: Scaffold(
         body: SafeArea(
+          bottom: false,
           child: SingleChildScrollView(
             child: Column(children: [_userInfo(), _userMenus()]),
           ),

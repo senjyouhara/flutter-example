@@ -76,6 +76,7 @@ class _KnowledgeDetailPageState extends State<KnowledgeDetailPage> {
       child: Scaffold(
         appBar: AppBar(title: Text(title ?? "")),
         body: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               Consumer<KnowledgeDetailViewModel>(

@@ -47,6 +47,7 @@ class _WebviewPageState extends State<WebviewPage> {
             backgroundColor: Colors.white,
             appBar: AppBar(),
             body: SafeArea(
+              bottom: false,
               child: Center(
                 child: Text(
                   "参数有误，请返回！",

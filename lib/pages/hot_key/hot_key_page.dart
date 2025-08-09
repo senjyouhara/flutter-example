@@ -53,6 +53,7 @@ class _HotKeyPageState extends State<HotKeyPage> {
       },
       child: Scaffold(
         body: SafeArea(
+          bottom: false,
           child: SingleChildScrollView(
             child: Column(
               children: [_searchBar(), _hotkeyGrid(), _friendGrid()],

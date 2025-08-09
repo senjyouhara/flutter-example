@@ -89,6 +89,8 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: Color(0xff018b7d),
       body: SafeArea(
+        bottom: false,
+        top: false,
         child: Container(
           padding: EdgeInsets.all(10.w),
           child: Column(

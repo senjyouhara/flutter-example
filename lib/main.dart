@@ -1,5 +1,6 @@
 import 'package:example/utils/sp_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'app.dart';
 import 'config.dart';
 
@@ -12,6 +13,11 @@ void main() async {
   await SpUtil.getInstance();
 
   await webViewInit();
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp, // 竖屏，顶部朝上
+    DeviceOrientation.portraitDown, // 竖屏，顶部朝下
+  ]);
 
   runApp(MyApp());
 }
