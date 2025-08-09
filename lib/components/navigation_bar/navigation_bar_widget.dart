@@ -54,6 +54,7 @@ class _NavigationBarWidgetState extends State<NavigationBarWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
+        bottom: false,
         child: IndexedStack(
           index: index,
           children: widget.pages.map((item){
