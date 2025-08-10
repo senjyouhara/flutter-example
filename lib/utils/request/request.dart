@@ -199,16 +199,20 @@ class Request {
       );
     }
 
+    var model = BaseModelEntity<T>();
     if(url.startsWith("http")){
-      var model = BaseModelEntity<T>();
       if(![ResponseType.json, ResponseType.plain].contains(response.requestOptions.responseType)) {
         return model;
       }
-      model.data = response.data;
-      return model;
     }
 
-    return BaseModelEntity<T>.fromJson(response.data);
+    if(T == String || T == int || T == double || T == bool || T == Uint8List || T == List ){
+      model.data = response.data;
+    } else {
+      model = BaseModelEntity<T>.fromJson(response.data);
+    }
+
+    return model;
   }
 
   static void initAdapter(Dio dio) {
