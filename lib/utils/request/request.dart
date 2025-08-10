@@ -206,7 +206,7 @@ class Request {
       }
     }
 
-    if(T == String || T == int || T == double || T == bool || T == Uint8List || T == List ){
+    if(T == String || T == int || T == double || T == bool || T == Uint8List || T == List || (T.toString().startsWith('List<') && T.toString().endsWith('>')) ){
       model.data = response.data;
     } else {
       model = BaseModelEntity<T>.fromJson(response.data);
