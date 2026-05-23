@@ -1,0 +1,7 @@
+{"file":".trellis/tasks/05-23-refactor-home-page-to-flutter-hooks-and-riverpod-best-practices/prd.md","reason":"Acceptance criteria and definition of done for verifying behavior-preserving Home migration."}
+{"file":".trellis/tasks/05-23-refactor-home-page-to-flutter-hooks-and-riverpod-best-practices/research/riverpod-home-patterns.md","reason":"Expected Riverpod/hooks architecture to check against, including AsyncNotifier state and hook-local controller usage."}
+{"file":".trellis/tasks/05-23-refactor-home-page-to-flutter-hooks-and-riverpod-best-practices/research/riverpod-coexistence.md","reason":"Expected migration boundary: Home local state only, existing provider-based auth remains in place."}
+{"file":".trellis/spec/frontend/state-management.md","reason":"Verify state ownership remains scoped and global auth is not unintentionally migrated."}
+{"file":".trellis/spec/frontend/hook-guidelines.md","reason":"Verify hook usage is deliberate and limited to widget-local lifecycle/controller glue."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Verify lint/type checks, manual UI flow requirements, shared navigation, and no unrelated churn."}
+{"file":".trellis/spec/frontend/networking-and-api-contracts.md","reason":"Verify Home fetch and favorite mutations still use Request and preserve WanAndroid response handling."}

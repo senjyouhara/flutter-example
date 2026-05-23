@@ -1,0 +1,7 @@
+{"file":".trellis/tasks/05-23-refactor-home-page-to-flutter-hooks-and-riverpod-best-practices/prd.md","reason":"Confirmed requirements, acceptance criteria, migration boundary, and out-of-scope items for the Home Riverpod/hooks refactor."}
+{"file":".trellis/tasks/05-23-refactor-home-page-to-flutter-hooks-and-riverpod-best-practices/research/riverpod-home-patterns.md","reason":"Implementation guidance for AsyncNotifier/AsyncValue screen state, refresh, pagination, favorite mutation, and hook usage."}
+{"file":".trellis/tasks/05-23-refactor-home-page-to-flutter-hooks-and-riverpod-best-practices/research/riverpod-coexistence.md","reason":"Coexistence guidance for introducing Riverpod while keeping existing provider-based LoginViewModel ownership."}
+{"file":".trellis/spec/frontend/state-management.md","reason":"Current project state ownership rules and the deliberate boundary exception for this migration."}
+{"file":".trellis/spec/frontend/hook-guidelines.md","reason":"Existing hook migration guardrails and lifecycle expectations that this feature-boundary migration must satisfy."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Project quality rules for request wrappers, navigation consistency, UI verification, and avoiding unrelated architecture churn."}
+{"file":".trellis/spec/frontend/networking-and-api-contracts.md","reason":"Shared Request/BaseModelEntity contracts that Home data fetching and favorite mutations must preserve."}
