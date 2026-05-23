@@ -94,6 +94,80 @@ Verify the real screen flow when touching:
 
 ---
 
+## Scenario: Git hook and commit quality enforcement
+
+### 1. Scope / Trigger
+- Trigger: adding or changing local git hooks, commit message policy, or CI quality gates for this Flutter repo.
+- Trigger: any change that affects how `flutter analyze`, commit message validation, or test execution is enforced before sharing code.
+
+### 2. Signatures
+- `lefthook.yml`
+- `pre-commit` -> `dart format {staged_files}`
+- `commit-msg` -> `dart run tool/validate_commit_messages.dart --message-file "{1}"`
+- `pre-push` -> `flutter analyze`
+- CI PR range -> `dart run tool/validate_commit_messages.dart --from <base-sha> --to <head-sha>`
+- CI push fallback -> `dart run tool/validate_commit_messages.dart --from <base-sha> --to <head-sha>` or `--last`
+- Commit examples -> `tool/commit_message_examples.txt`
+
+### 3. Contracts
+- Commit headers must follow Conventional Commits: `<type>(optional-scope): short imperative summary` or `<type>(optional-scope)!: short imperative summary`.
+- Allowed commit types are `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style`, and `test`.
+- Optional scopes must stay lowercase and machine-parseable so the same validator can run locally and in CI.
+- `commit-msg` and CI must call the same Dart validator entrypoint; do not maintain a second regex in workflow YAML.
+- `pre-commit` stays fast and only formats staged `.dart` files.
+- `pre-push` runs `flutter analyze`; it does not become a second full CI pipeline.
+- When the repo has no `test/` or `integration_test/` directory, CI may skip `flutter test` with an explicit message rather than inventing placeholder tests.
+- `tool/commit_message_examples.txt` is the in-repo reference for accepted commit message shapes; it is guidance, not a required git template.
+
+### 4. Validation & Error Matrix
+- Invalid Conventional Commit header -> fail `commit-msg` and fail CI commit-range validation.
+- Empty commit header -> fail validation.
+- `Merge ` / `fixup! ` / `squash! ` / `Revert "` headers -> ignore in validator rather than blocking Git's generated messages.
+- New branch first push with all-zero `before` SHA -> compute a base commit and validate the full branch range, not just the last commit.
+- Missing `test/` and `integration_test/` directories -> skip `flutter test` in CI with an explicit log line.
+- Staged non-Dart files only -> `pre-commit` should not try to format unrelated files.
+
+### 5. Good / Base / Bad Cases
+- Good: `feat(ci): add lefthook commit checks`
+- Good: `refactor(routes)!: rename article route arguments`
+- Base: `chore: update hook command names`
+- Bad: `update`
+- Bad: `fix bug`
+- Bad: `WIP`
+
+### 6. Tests Required
+- Smoke-test the validator with one valid message file and one invalid message file.
+- Verify `dart format --output=none --set-exit-if-changed tool/validate_commit_messages.dart` stays clean.
+- Run `dart analyze tool/validate_commit_messages.dart`.
+- Run `flutter analyze` and record clearly if failures come from pre-existing repo-wide issues outside the hook task.
+- Verify `pre-commit` only reformats staged `.dart` files and re-stages fixes.
+- Verify CI logic covers both PR commit ranges and first-push/default-push paths.
+
+### 7. Wrong vs Correct
+#### Wrong
+
+```yaml
+commit-msg:
+  commands:
+    conventional-commits:
+      run: dart run tool/validate_commit_messages.dart --message-file "{1}"
+
+# workflow also keeps a second hard-coded regex or only checks the last commit
+```
+
+#### Correct
+
+```yaml
+commit-msg:
+  commands:
+    conventional-commits:
+      run: dart run tool/validate_commit_messages.dart --message-file "{1}"
+```
+
+```bash
+dart run tool/validate_commit_messages.dart --from <base-sha> --to <head-sha>
+```
+
 ## Code Review Checklist
 
 - Is the code placed in the correct feature/shared folder?
@@ -103,6 +177,8 @@ Verify the real screen flow when touching:
 - Are models typed instead of parsed as raw maps?
 - Does the notifier publish a new state snapshot after mutation?
 - Does the change avoid introducing a competing architecture for just one screen?
+- If hook or CI config changed, do local `commit-msg` and CI reuse the same validator entrypoint?
+- If hook or CI config changed, does `pre-commit` stay fast and scoped to staged-file formatting?
 - If UI changed, was the actual screen flow verified?
 
 ---

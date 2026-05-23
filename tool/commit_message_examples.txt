@@ -1,0 +1,21 @@
+Conventional Commit examples
+
+Valid examples:
+- feat(auth): add login form validation
+- fix(home): prevent banner crash on empty state
+- chore(hooks): add lefthook commit checks
+- docs(ci): explain commit message examples
+- refactor(routes)!: rename article route arguments
+
+Format:
+<type>(optional-scope): short imperative summary
+<type>(optional-scope)!: short imperative summary
+
+Common types:
+feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+
+Avoid:
+- update
+- fix bug
+- WIP
+- 临时提交

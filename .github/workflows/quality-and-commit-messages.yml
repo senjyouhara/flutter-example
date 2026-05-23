@@ -1,0 +1,66 @@
+name: quality-and-commit-messages
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify Dart formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Run Flutter analyze
+        run: flutter analyze
+
+      - name: Run Flutter test when test assets exist
+        run: |
+          ran_tests=false
+
+          if [ -d test ]; then
+            flutter test test
+            ran_tests=true
+          fi
+
+          if [ -d integration_test ]; then
+            flutter test integration_test
+            ran_tests=true
+          fi
+
+          if [ "$ran_tests" = false ]; then
+            echo "No test/ or integration_test/ directory found; skipping flutter test."
+          fi
+
+      - name: Validate commit messages
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            dart run tool/validate_commit_messages.dart --from "$PR_BASE_SHA" --to "$PR_HEAD_SHA"
+          elif [ "$PUSH_BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            BASE_SHA="$(git merge-base "origin/$DEFAULT_BRANCH" "$PUSH_HEAD_SHA")"
+            dart run tool/validate_commit_messages.dart --from "$BASE_SHA" --to "$PUSH_HEAD_SHA"
+          else
+            dart run tool/validate_commit_messages.dart --from "$PUSH_BEFORE_SHA" --to "$PUSH_HEAD_SHA"
+          fi

@@ -1,0 +1,17 @@
+pre-commit:
+  parallel: true
+  commands:
+    dart-format:
+      glob: "**/*.dart"
+      run: dart format {staged_files}
+      stage_fixed: true
+
+commit-msg:
+  commands:
+    conventional-commits:
+      run: dart run tool/validate_commit_messages.dart --message-file "{1}"
+
+pre-push:
+  commands:
+    flutter-analyze:
+      run: flutter analyze
