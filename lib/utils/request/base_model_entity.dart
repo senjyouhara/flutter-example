@@ -1,5 +1,5 @@
-import 'package:example/generated/json/base/json_field.dart';
 import 'dart:convert';
+import 'package:example/generated/json/base/json_field.dart';
 export 'package:example/generated/json/base_model_entity.g.dart';
 import 'package:example/generated/json/base/json_convert_content.dart';
 
@@ -19,15 +19,16 @@ class BaseModelEntity<T> {
     errorMsg = json['errorMsg'];
   }
 
-	Map<String, dynamic> toJson() {
-		final Map<String, dynamic> data = new Map<String, dynamic>();
-		if (this.data != null) {
-			data['data'] = this.data;
-		}
-		data['errorCode'] = this.errorCode;
-		data['errorMsg'] = this.errorMsg;
-		return data;
-	}
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.data != null) {
+      data['data'] = this.data;
+    }
+    data['errorCode'] = this.errorCode;
+    data['errorMsg'] = this.errorMsg;
+    return data;
+  }
+
   @override
   String toString() {
     return jsonEncode(this);
