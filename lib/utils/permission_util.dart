@@ -1,9 +1,9 @@
 
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/foundation.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class PermissionUtil {
 
@@ -28,13 +28,13 @@ class PermissionUtil {
       }
 
       if (status.isGranted) {
-        print("Android: 存储权限已授予");
+        debugPrint('Android: 存储权限已授予');
         return true;
       } else if (status.isPermanentlyDenied) {
-        print("Android: 存储权限被永久拒绝，请前往设置开启");
+        debugPrint('Android: 存储权限被永久拒绝，请前往设置开启');
         return false;
       } else {
-        print("Android: 存储权限被拒绝");
+        debugPrint('Android: 存储权限被拒绝');
         return false;
       }
   }

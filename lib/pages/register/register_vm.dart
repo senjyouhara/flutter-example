@@ -1,14 +1,21 @@
-import 'package:flutter/cupertino.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import '../../utils/request/request.dart';
 
-class RegisterViewModel with ChangeNotifier {
+final registerActionProvider = Provider<RegisterAction>((ref) {
+  return RegisterAction();
+});
 
-  Future<bool> register(String username, String password, String repassword)async {
-    var result = await Request.post("/user/register", queryParameters: {
-      "username": username,
-      "password": password,
-      "repassword": repassword,
-    });
+class RegisterAction {
+  Future<bool> register(String username, String password, String repassword) async {
+    final result = await Request.post(
+      '/user/register',
+      queryParameters: {
+        'username': username,
+        'password': password,
+        'repassword': repassword,
+      },
+    );
     return result.data != null;
   }
 }

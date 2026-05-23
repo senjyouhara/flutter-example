@@ -1,36 +1,57 @@
-import 'package:flutter/cupertino.dart';
-import '../../constants/Sp_constants.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import '../../constants/sp_constants.dart';
 import '../../utils/request/request.dart';
 import '../../utils/sp_util.dart';
 import 'login_model_entity.dart';
 
-class LoginViewModel with ChangeNotifier {
+final authProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
 
-  LoginModelEntity? userInfo;
+class AuthState {
+  const AuthState({this.userInfo});
 
-  Future getInfo() async {
-    var userInfoMap = await SpUtil.getMap(SpConstants.userInfo);
-    if(userInfoMap?.isNotEmpty == true){
-      userInfo = LoginModelEntity.fromJson(userInfoMap!);
-      notifyListeners();
+  final LoginModelEntity? userInfo;
+
+  bool get isLoggedIn => userInfo != null;
+
+  AuthState copyWith({
+    LoginModelEntity? userInfo,
+    bool clearUserInfo = false,
+  }) {
+    return AuthState(
+      userInfo: clearUserInfo ? null : (userInfo ?? this.userInfo),
+    );
+  }
+}
+
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() {
+    final userInfoMap = SpUtil.getMap(SpConstants.userInfo);
+    if (userInfoMap?.isNotEmpty == true) {
+      return AuthState(userInfo: LoginModelEntity.fromJson(userInfoMap!));
     }
+    return const AuthState();
   }
 
-  Future<LoginModelEntity> login(String username, String password)async {
-    var result = await Request.post<LoginModelEntity>("/user/login", queryParameters: {
-      "username": username,
-      "password": password,
-    });
-    userInfo = result.data!;
-    notifyListeners();
-    return result.data!;
+  Future<LoginModelEntity> login(String username, String password) async {
+    final result = await Request.post<LoginModelEntity>(
+      '/user/login',
+      queryParameters: {
+        'username': username,
+        'password': password,
+      },
+    );
+    final userInfo = result.data!;
+    await SpUtil.setMap(SpConstants.userInfo, userInfo.toJson());
+    state = AuthState(userInfo: userInfo);
+    return userInfo;
   }
 
-  void logout() async {
-    await Request.get("/user/logout/json");
+  Future<void> logout() async {
+    await Request.get('/user/logout/json');
     await SpUtil.remove(SpConstants.userInfo);
     await SpUtil.remove(SpConstants.cookies);
-    userInfo = null;
-    notifyListeners();
+    state = const AuthState();
   }
 }

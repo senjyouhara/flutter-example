@@ -1,7 +1,7 @@
 import 'package:example/generated/json/base/json_field.dart';
-import 'package:example/generated/json/knowledge_menuTree_model_entity.g.dart';
+import 'package:example/generated/json/knowledge_menu_tree_model_entity.g.dart';
 import 'dart:convert';
-export 'package:example/generated/json/knowledge_menuTree_model_entity.g.dart';
+export 'package:example/generated/json/knowledge_menu_tree_model_entity.g.dart';
 
 @JsonSerializable()
 class KnowledgeMenuTreeModelEntity {

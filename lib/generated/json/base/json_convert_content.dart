@@ -9,7 +9,7 @@ import 'package:example/pages/home/home_model_entity.dart';
 import 'package:example/pages/home/home_top_list_model.dart';
 import 'package:example/pages/hot_key/friend_model_entity.dart';
 import 'package:example/pages/hot_key/hot_key_model_entity.dart';
-import 'package:example/pages/knowledge/knowledge_menuTree_model_entity.dart';
+import 'package:example/pages/knowledge/knowledge_menu_tree_model_entity.dart';
 import 'package:example/pages/knowledge/knowledge_model_entity.dart';
 import 'package:example/pages/login/login_model_entity.dart';
 import 'package:example/pages/search/search_model_entity.dart';

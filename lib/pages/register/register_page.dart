@@ -1,232 +1,193 @@
-import 'dart:math';
-
 import 'package:dio/dio.dart';
 import 'package:example/pages/register/register_vm.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:oktoast/oktoast.dart';
-import 'package:provider/provider.dart';
 
 import '../../components/loading.dart';
 import '../../routes/route_utils.dart';
 import '../../routes/routes.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends HookConsumerWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() {
-    return _RegisterPageState();
-  }
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final formKey = useMemoized(GlobalKey<FormBuilderState>.new);
+    final usernameController = useTextEditingController();
+    final passwordController = useTextEditingController();
+    final rePasswordController = useTextEditingController();
 
-class FormStateLogic {
-  final formKey = GlobalKey<FormState>();
+    void onRegister() {
+      RouteUtils.pushReplacementNamed(
+        context,
+        RoutesPath.loginPage,
+        arguments: {},
+      );
+    }
 
-  final UsernameController = TextEditingController();
-  final PasswordController = TextEditingController();
-  final RePasswordController = TextEditingController();
+    Future<void> onSubmit() async {
+      FocusScope.of(context).unfocus();
+      final isValid = formKey.currentState?.saveAndValidate() ?? false;
+      if (!isValid) {
+        return;
+      }
 
-  String userName = "";
-  String password = "";
-  String rePassword = "";
-}
+      final formValue = formKey.currentState!.value;
+      final username = formValue['username'] as String? ?? '';
+      final password = formValue['password'] as String? ?? '';
+      final rePassword = formValue['rePassword'] as String? ?? '';
 
-class _RegisterPageState extends State<RegisterPage> {
-  final _logic = FormStateLogic();
-  final vm = RegisterViewModel();
-
-  void onSubmit() async {
-    // 隐藏软键盘
-    // SystemChannels.textInput.invokeMethod("TextInput.hide");
-    FocusScope.of(context).unfocus();
-    if (_logic.formKey.currentState!.validate()) {
       Loading.showLoading();
       try {
-        final result = await vm.register(
-          _logic.userName,
-          _logic.password,
-          _logic.rePassword,
+        final result = await ref.read(registerActionProvider).register(
+          username,
+          password,
+          rePassword,
         );
-        if(result){
-          showToast("注册成功！");
+        if (result) {
+          showToast('注册成功！');
+          if (!context.mounted) {
+            return;
+          }
           onRegister();
         }
-        print("result: ${result}");
-      } on DioException catch (e){
-        print("err: ${e}");
+      } on DioException catch (_) {
+      } finally {
+        Loading.dismissAll();
       }
-      Loading.dismissAll();
     }
-  }
 
-  void onRegister() {
-    RouteUtils.pushReplacementNamed(
-      context,
-      RoutesPath.loginPage,
-      arguments: {},
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<RegisterViewModel>(
-      create: (context) {
-        return vm;
-      },
-      child: Scaffold(
-        backgroundColor: Color(0xff018b7d),
-        body: Container(
-          padding: EdgeInsets.all(10.w),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Form(
-                key: _logic.formKey,
-                child: Column(
-                  spacing: 20.h,
-                  children: [
-                    TextFormField(
-                      controller: _logic.UsernameController,
-                      onChanged: (val) {
-                        _logic.UsernameController.text = val;
-                        _logic.userName = val;
-                      },
-                      cursorColor: Colors.white,
-                      style: TextStyle(color: Colors.white, fontSize: 14.sp),
-                      decoration: textFormCommonInputDecoration("用户名"),
-                      textInputAction: TextInputAction.next,
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(20),
-                        FilteringTextInputFormatter.deny(RegExp(r"\s*"))
-                      ],
-                      validator: (value) {
-                        if (value == "" ||
-                            value == null ||
-                            value.length < 5) {
-                          return "用户名最少5位";
+    return Scaffold(
+      backgroundColor: const Color(0xff018b7d),
+      body: Container(
+        padding: EdgeInsets.all(10.w),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FormBuilder(
+              key: formKey,
+              child: Column(
+                spacing: 20.h,
+                children: [
+                  FormBuilderTextField(
+                    name: 'username',
+                    controller: usernameController,
+                    cursorColor: Colors.white,
+                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                    decoration: textFormCommonInputDecoration('用户名'),
+                    textInputAction: TextInputAction.next,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(20),
+                      FilteringTextInputFormatter.deny(RegExp(r'\s*')),
+                    ],
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(errorText: '用户名最少5位'),
+                      FormBuilderValidators.minLength(5, errorText: '用户名最少5位'),
+                    ]),
+                  ),
+                  FormBuilderTextField(
+                    name: 'password',
+                    obscureText: true,
+                    controller: passwordController,
+                    cursorColor: Colors.white,
+                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                    decoration: textFormCommonInputDecoration('密码'),
+                    textInputAction: TextInputAction.next,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(20),
+                      FilteringTextInputFormatter.deny(RegExp(r'\s*')),
+                    ],
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(errorText: '密码最少5位'),
+                      FormBuilderValidators.minLength(5, errorText: '密码最少5位'),
+                    ]),
+                  ),
+                  FormBuilderTextField(
+                    name: 'rePassword',
+                    obscureText: true,
+                    controller: rePasswordController,
+                    cursorColor: Colors.white,
+                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
+                    decoration: textFormCommonInputDecoration('确认密码'),
+                    textInputAction: TextInputAction.none,
+                    onEditingComplete: onSubmit,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(20),
+                      FilteringTextInputFormatter.deny(RegExp(r'\s*')),
+                    ],
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(errorText: '确认密码最少5位'),
+                      FormBuilderValidators.minLength(5, errorText: '确认密码最少5位'),
+                      (valueCandidate) {
+                        final passwordValue =
+                            formKey.currentState?.fields['password']?.value
+                                as String?;
+                        if (valueCandidate != passwordValue) {
+                          return '两次密码不一致';
                         }
                         return null;
                       },
-                    ),
-                    TextFormField(
-                      obscureText: true,
-                      controller: _logic.PasswordController,
-                      onChanged: (val) {
-                        _logic.PasswordController.text = val;
-                        _logic.password = val;
-                      },
-                      cursorColor: Colors.white,
-                      style: TextStyle(color: Colors.white, fontSize: 14.sp),
-                      decoration: textFormCommonInputDecoration("密码"),
-                      textInputAction: TextInputAction.next,
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(20),
-                        FilteringTextInputFormatter.deny(RegExp(r"\s*"))
-                      ],
-                      validator: (value) {
-                        if (value == null ||
-                            value.isEmpty ||
-                            value.length < 5) {
-                          return "密码最少5位";
-                        }
-                        return null;
-                      },
-                    ),
-                    TextFormField(
-                      obscureText: true,
-                      controller: _logic.RePasswordController,
-                      onChanged: (val) {
-                        _logic.RePasswordController.text = val;
-                        _logic.rePassword = val;
-                      },
-                      cursorColor: Colors.white,
-                      style: TextStyle(color: Colors.white, fontSize: 14.sp),
-                      decoration: textFormCommonInputDecoration("确认密码"),
-                      textInputAction: TextInputAction.none,
-                      onEditingComplete: (){
-                        onSubmit();
-                      },
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(20),
-                        FilteringTextInputFormatter.deny(RegExp(r"\s*"))
-                      ],
-                      validator: (value) {
-                        if (value == null ||
-                            value.isEmpty ||
-                            value.length < 5) {
-                          return "确认密码最少5位";
-                        }
-
-                        if (value != _logic.password) {
-                          return "两次密码不一致";
-                        }
-                        return null;
-                      },
-                    ),
-                    FractionallySizedBox(
-                      widthFactor: 1,
-                      child: OutlinedButton(
-                        onPressed: onSubmit,
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.white), // 修改边框颜色
-                          padding: EdgeInsets.all(16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16), // 圆角大小
-                          ),
+                    ]),
+                  ),
+                  FractionallySizedBox(
+                    widthFactor: 1,
+                    child: OutlinedButton(
+                      onPressed: onSubmit,
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white),
+                        padding: const EdgeInsets.all(16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: Text(
-                          "注册",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                          ),
+                      ),
+                      child: Text(
+                        '注册',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
                         ),
                       ),
                     ),
-                    FractionallySizedBox(
-                      widthFactor: 1,
-                      child: TextButton(
-                        onPressed: onRegister,
-                        child: Text(
-                          "已有账号？前往登录",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16.sp,
-                          ),
+                  ),
+                  FractionallySizedBox(
+                    widthFactor: 1,
+                    child: TextButton(
+                      onPressed: onRegister,
+                      child: Text(
+                        '已有账号？前往登录',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.sp,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  InputDecoration textFormCommonInputDecoration(String labelText) {
-    return InputDecoration(
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.white, width: 0.5.w),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.white, width: 1.w),
-      ),
-      labelText: labelText ?? "请输入",
-      labelStyle: TextStyle(color: Colors.white),
-    );
-  }
-
-  Widget commonTextForm(TextFormField config, String labelText) {
-    return TextFormField(
-      cursorColor: Colors.white,
-      style: TextStyle(color: Colors.white, fontSize: 14.sp),
-      decoration: textFormCommonInputDecoration(labelText),
-    );
-  }
+InputDecoration textFormCommonInputDecoration(String labelText) {
+  return InputDecoration(
+    enabledBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: Colors.white, width: 0.5.w),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: Colors.white, width: 1.w),
+    ),
+    labelText: labelText,
+    labelStyle: const TextStyle(color: Colors.white),
+  );
 }

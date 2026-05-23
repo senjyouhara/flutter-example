@@ -1,181 +1,153 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:example/extensions/image_extension.dart';
+import 'package:example/pages/home/home_model_entity.dart';
+import 'package:example/pages/home/home_vm.dart';
 import 'package:example/pages/login/login_vm.dart';
-import 'package:example/pages/webview/webview_page.dart';
+import 'package:example/routes/route_utils.dart';
 import 'package:example/routes/routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_swiper_view/flutter_swiper_view.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:provider/provider.dart';
 
 import '../../components/loading.dart';
-import '../../components/postItem.dart';
-import '../../routes/route_utils.dart';
-import 'home_list_model_entity.dart';
-import 'home_vm.dart';
+import '../../components/post_item.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() {
-    return _HomePageState();
-  }
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final refreshController = useMemoized(
+      () => RefreshController(initialRefresh: false),
+    );
+    useEffect(() {
+      return refreshController.dispose;
+    }, [refreshController]);
 
-class _HomePageState extends State<HomePage> {
-  HomeViewModel vm = new HomeViewModel();
-  RefreshController _refreshController = RefreshController(
-      initialRefresh: false);
-  int _page = 1;
+    final homeAsync = ref.watch(homeProvider);
+    final homeState = homeAsync.asData?.value;
+    final notifier = ref.read(homeProvider.notifier);
 
-  @override
-  void initState() {
-    super.initState();
-   init();
-  }
-
-  void init() async {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+    useEffect(() {
       Loading.showLoading();
-      try {
-        await vm.getBanner();
-      } catch (e) {
+      return () {
+        Loading.dismissAll();
+      };
+    }, const []);
 
+    useEffect(() {
+      if (!homeAsync.isLoading) {
+        Loading.dismissAll();
       }
+      return null;
+    }, [homeAsync.isLoading]);
 
-      try {
-        await vm.getListData(_page);
-      } catch (e) {
-
-      }
-      Loading.dismissAll();
-    });
-  }
-
-  void _onRefresh() async {
-    _page = 1;
-    // monitor network fetch
-    await vm.getBanner();
-    await vm.getListData(_page);
-    // if failed,use refreshFailed()
-    _refreshController.refreshCompleted();
-  }
-
-  void _onLoading() async {
-    _page++;
-    // monitor network fetch
-    await vm.getListData(_page);
-    // if failed,use loadFailed(),if no data return,use LoadNodata()
-    if (mounted)
-      setState(() {
-
-      });
-    _refreshController.loadComplete();
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<HomeViewModel>(
-      create: (context) {
-        return vm;
-      },
-      child: Scaffold(
+    if (homeState == null) {
+      return const Scaffold(
         body: SafeArea(
-            child: SmartRefresher(
-              controller: _refreshController,
-              enablePullDown: true,
-              enablePullUp: true,
-              onRefresh: _onRefresh,
-              onLoading: _onLoading,
-              header: MaterialClassicHeader(),
-              footer: ClassicFooter(
-                  loadingText: "正在加载中", failedText: "加载失败请重试"),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _swiper(),
-                    Consumer<HomeViewModel>(
-                      builder: (context, vm, child) {
-                        return ListView.builder(
-                          itemCount: vm.listData.length,
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return Container(
-                              padding: EdgeInsets.all(12),
-                              child: GestureDetector(
-                                child: PostItemWidget(data: vm.listData[index], index: index, onFavoriteTap: (item)async {
+          child: SizedBox.expand(),
+        ),
+      );
+    }
 
-                                  if(context.read<LoginViewModel>().userInfo == null){
-                                    return;
-                                  }
-
-                                  if(item.collect == false){
-                                    await vm.collectInnerPost(item.id.toString());
-                                    showToast("收藏成功！");
-                                    item.collect = true;
-                                  } else {
-                                    await vm.delCollectPost(item.id.toString());
-                                    item.collect = false;
-                                  }
-                                  vm.updateListData(item, index);
-                                }),
-                                behavior: HitTestBehavior.translucent,
-                                // 或 .translucent
-                                onTap: () {
-                                  print("路由跳转");
-                                  RouteUtils.pushNamed(
-                                    context,
-                                    RoutesPath.webviewPage,
-                                    arguments: {
-                                      "title": vm.listData[index].title,
-                                      "url": vm.listData[index].link,
-                                    },
-                                  );
-                                  // Navigator.push(context, MaterialPageRoute(builder: (c) => WebviewPage(title: "跳转页面标题")));
-                                },
-                              ),
-                            );
+    return Scaffold(
+      body: SafeArea(
+        child: SmartRefresher(
+          controller: refreshController,
+          enablePullDown: true,
+          enablePullUp: true,
+          onRefresh: () async {
+            refreshController.resetNoData();
+            final next = await notifier.refresh();
+            refreshController.refreshCompleted();
+            if (next.isPageEnd) {
+              refreshController.loadNoData();
+            }
+          },
+          onLoading: () async {
+            final next = await notifier.loadNextPage();
+            if (next.isPageEnd) {
+              refreshController.loadNoData();
+            } else {
+              refreshController.loadComplete();
+            }
+          },
+          header: MaterialClassicHeader(),
+          footer: ClassicFooter(
+            loadingText: '正在加载中',
+            failedText: '加载失败请重试',
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _swiper(homeState.bannerData),
+                ListView.builder(
+                  itemCount: homeState.listData.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final item = homeState.listData[index];
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        child: PostItemWidget(
+                          data: item,
+                          index: index,
+                          onFavoriteTap: (item) async {
+                            if (!ref.read(authProvider).isLoggedIn) {
+                              return;
+                            }
+                            final collected = await notifier.toggleFavorite(item);
+                            if (collected) {
+                              showToast('收藏成功！');
+                            }
                           },
-                        );
-                      },
-                    ),
-                  ],
+                        ),
+                        onTap: () {
+                          RouteUtils.pushNamed(
+                            context,
+                            RoutesPath.webviewPage,
+                            arguments: {
+                              'title': item.title,
+                              'url': item.link,
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  },
                 ),
-              ),)
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _swiper() {
-    return Consumer<HomeViewModel>(
-      builder: (context, value, child) {
-        return Container(
-          height: 150.h,
-          child: Swiper(
-            outer: false,
-            autoplayDelay: 5000,
-            itemCount: value.bannerData.length ?? 0,
-            autoplay: true,
-            loop: true,
-            indicatorLayout: PageIndicatorLayout.NONE,
-            itemBuilder: (context, index) {
-              return Container(
-                width: double.infinity,
-                child: Image.network(
-                  value.bannerData?[index]?.imagePath ?? "",
-                  fit: BoxFit.cover,
-                ),
-              );
-            },
-          ),
-        );
-      },
+  Widget _swiper(List<HomeModelEntity> bannerData) {
+    return SizedBox(
+      height: 150.h,
+      child: Swiper(
+        outer: false,
+        autoplayDelay: 5000,
+        itemCount: bannerData.length,
+        autoplay: true,
+        loop: true,
+        indicatorLayout: PageIndicatorLayout.NONE,
+        itemBuilder: (context, index) {
+          return SizedBox(
+            width: double.infinity,
+            child: Image.network(
+              bannerData[index].imagePath ?? '',
+              fit: BoxFit.cover,
+            ),
+          );
+        },
+      ),
     );
   }
 }

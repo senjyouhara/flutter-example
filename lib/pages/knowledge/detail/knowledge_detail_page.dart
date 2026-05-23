@@ -1,189 +1,179 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:oktoast/oktoast.dart';
-import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../components/loading.dart';
 import '../../../routes/route_utils.dart';
 import '../../../routes/routes.dart';
+import '../knowledge_menu_tree_model_entity.dart';
 import 'knowledge_detail_vm.dart';
 
-class KnowledgeDetailPage extends StatefulWidget {
+class KnowledgeDetailPage extends HookConsumerWidget {
   const KnowledgeDetailPage({super.key});
 
   @override
-  State<KnowledgeDetailPage> createState() {
-    return _KnowledgeDetailPageState();
-  }
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final refreshController = useMemoized(
+      () => RefreshController(initialRefresh: false),
+    );
+    final title = useState<String?>(null);
 
-class _KnowledgeDetailPageState extends State<KnowledgeDetailPage> {
-  final vm = KnowledgeDetailViewModel();
-  RefreshController _refreshController = RefreshController(
-    initialRefresh: false,
-  );
-  int _page = 1;
-  String? title;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      var map = ModalRoute.of(context)?.settings?.arguments;
-      if (map is Map) {
-        title = map["title"];
-        if (map["cid"]?.toString().isNotEmpty == true) {
-          vm.pid = map["id"];
-          vm.id = map["cid"];
-          Loading.showLoading();
-          await vm.getListData(_page, cid: vm.id);
-        } else {
-          showToast("参数有误！");
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final map = ModalRoute.of(context)?.settings.arguments;
+        if (map is! Map) {
+          return;
         }
-        setState(() {});
+
+        title.value = map['title']?.toString();
+        final pid = map['id'];
+        final cid = map['cid'];
+        if (cid?.toString().isNotEmpty == true && pid != null && cid != null) {
+          Loading.showLoading();
+          await ref.read(knowledgeDetailProvider.notifier).initialize(
+                pid: pid as int,
+                cid: cid as int,
+              );
+          Loading.dismissAll();
+        } else {
+          showToast('参数有误！');
+        }
+      });
+      return refreshController.dispose;
+    }, const []);
+
+    Future<void> onRefresh() async {
+      final next = await ref.read(knowledgeDetailProvider.notifier).refresh();
+      refreshController.refreshCompleted();
+      if (next.isPageEnd) {
+        refreshController.loadNoData();
+      } else {
+        refreshController.resetNoData();
       }
-      await vm.getMenuTree();
-      Loading.dismissAll();
-    });
-  }
+    }
 
-  void _onRefresh() async {
-    _page = 1;
-    // monitor network fetch
-    await vm.getListData(_page, cid: vm.id);
-    // if failed,use refreshFailed()
-    _refreshController.refreshCompleted();
-  }
+    Future<void> onLoading() async {
+      final next = await ref.read(knowledgeDetailProvider.notifier).loadNextPage();
+      if (next.isPageEnd) {
+        refreshController.loadNoData();
+      } else {
+        refreshController.loadComplete();
+      }
+    }
 
-  void _onLoading() async {
-    _page++;
-    // monitor network fetch
-    await vm.getListData(_page, cid: vm.id);
-    // if failed,use loadFailed(),if no data return,use LoadNodata()
-    if (mounted) setState(() {});
+    final detailState = ref.watch(knowledgeDetailProvider).asData?.value;
+    final selectedPid = detailState?.selectedPid;
+    final selectedCid = detailState?.selectedCid;
+    final menuItems = _resolveMenuItems(
+      detailState?.menuTreeData ?? const [],
+      selectedPid,
+    );
+    final listData = detailState?.listData ?? const [];
 
-    _refreshController.loadComplete();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<KnowledgeDetailViewModel>(
-      create: (context) {
-        return vm;
-      },
-      child: Scaffold(
-        appBar: AppBar(title: Text(title ?? "")),
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              Consumer<KnowledgeDetailViewModel>(
-                builder: (context, vm, child) {
-                  var index = vm.menuTreeData.indexWhere(
-                    (item) => item.id == vm.pid!,
-                  );
-                  var items = vm.menuTreeData.length <= 0
-                      ? []
-                      : index <= 0
-                      ? vm.menuTreeData[0]?.children ?? []
-                      : vm.menuTreeData[index]?.children ?? [];
+    return Scaffold(
+      appBar: AppBar(title: Text(title.value ?? '')),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            SizedBox(
+              height: 40.h,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: menuItems.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  final item = menuItems[index];
                   return Container(
-                    height: 40.h,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: items.length,
-                      shrinkWrap: true,
-                      // physics: NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        return Container(
-                          padding: EdgeInsets.all(12),
-                          child: GestureDetector(
-                            child: Container(
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.all(0.r),
-                                    child: Text(
-                                      items[index].name ?? "",
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
-                                        color: vm.id == items[index].id
-                                            ? Colors.blueAccent
-                                            : Colors.black87,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                    padding: const EdgeInsets.all(12),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () async {
+                        Loading.showLoading();
+                        await ref
+                            .read(knowledgeDetailProvider.notifier)
+                            .selectCategory(item.id!);
+                        Loading.dismissAll();
+                        refreshController.resetNoData();
+                      },
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(0.r),
+                            child: Text(
+                              item.name ?? '',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: selectedCid == item.id
+                                    ? Colors.blueAccent
+                                    : Colors.black87,
                               ),
                             ),
-                            behavior: HitTestBehavior.translucent,
-                            // 或 .translucent
-                            onTap: () async {
-                              vm.id = items[index].id;
-                              _page = 1;
-                              Loading.showLoading();
-                              try {
-                                await vm.getListData(_page, cid: vm.id);
-                              } catch (e){
-
-                              }
-                              Loading.dismissAll();
-                              // monitor network fetch
-                              // Navigator.push(context, MaterialPageRoute(builder: (c) => WebviewPage(title: "跳转页面标题")));
-                            },
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
-              Expanded(child:   SmartRefresher(
-                controller: _refreshController,
+            ),
+            Expanded(
+              child: SmartRefresher(
+                controller: refreshController,
                 enablePullDown: true,
                 enablePullUp: true,
-                onRefresh: _onRefresh,
-                onLoading: _onLoading,
-                header: MaterialClassicHeader(),
-                footer: ClassicFooter(
-                  loadingText: "正在加载中",
-                  failedText: "加载失败请重试",
+                onRefresh: onRefresh,
+                onLoading: onLoading,
+                header: const MaterialClassicHeader(),
+                footer: const ClassicFooter(
+                  loadingText: '正在加载中',
+                  failedText: '加载失败请重试',
                 ),
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      Consumer<KnowledgeDetailViewModel>(
-                        builder: (context, vm, child) {
-                          var items = vm.listData;
-                          return Container(
-                            child: ListView.builder(
-                              itemCount: items.length,
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                return GestureDetector(
-                                  onTap: (){
-                                    RouteUtils.pushNamed(
-                                      context,
-                                      RoutesPath.webviewPage,
-                                      arguments: {"title": items[index].title?.replaceAll(RegExp(r"<[^>]*>"), ""), "url": items[index].link},
-                                    );
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      border: items.length - 1 == index ? null : Border(
-                                        bottom: BorderSide(color: Color(0x66000000), width: 1.w),
-                                      ),
-                                    ),
-                                    padding: EdgeInsets.fromLTRB(6.w, 10.w, 6.w, 10.w),
-                                    child: Html(data: items[index].title ?? "", style: {
-                                      'html': Style(fontSize: FontSize(16.sp)),
-                                    },),
+                      ListView.builder(
+                        itemCount: listData.length,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          final item = listData[index];
+                          return GestureDetector(
+                            onTap: () {
+                              RouteUtils.pushNamed(
+                                context,
+                                RoutesPath.webviewPage,
+                                arguments: {
+                                  'title': item.title?.replaceAll(
+                                    RegExp(r'<[^>]*>'),
+                                    '',
                                   ),
-                                );
-                              },
+                                  'url': item.link,
+                                },
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: listData.length - 1 == index
+                                    ? null
+                                    : Border(
+                                        bottom: BorderSide(
+                                          color: const Color(0x66000000),
+                                          width: 1.w,
+                                        ),
+                                      ),
+                              ),
+                              padding: EdgeInsets.fromLTRB(6.w, 10.w, 6.w, 10.w),
+                              child: Html(
+                                data: item.title ?? '',
+                                style: {
+                                  'html': Style(fontSize: FontSize(16.sp)),
+                                },
+                              ),
                             ),
                           );
                         },
@@ -191,15 +181,25 @@ class _KnowledgeDetailPageState extends State<KnowledgeDetailPage> {
                     ],
                   ),
                 ),
-              ),),
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _menuTree() {
-    return Container();
+  List<KnowledgeMenuTreeModelEntity> _resolveMenuItems(
+    List<KnowledgeMenuTreeModelEntity> menuTreeData,
+    int? selectedPid,
+  ) {
+    if (menuTreeData.isEmpty) {
+      return const [];
+    }
+    final index = menuTreeData.indexWhere((item) => item.id == selectedPid);
+    if (index <= 0) {
+      return menuTreeData.first.children ?? const [];
+    }
+    return menuTreeData[index].children ?? const [];
   }
 }

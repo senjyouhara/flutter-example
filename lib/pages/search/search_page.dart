@@ -1,103 +1,112 @@
 import 'package:example/pages/search/search_vm.dart';
 import 'package:example/routes/route_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../components/loading.dart';
 import '../../routes/routes.dart';
+import 'search_model_entity.dart';
 
-class SearchPage extends StatefulWidget {
+class SearchPage extends HookConsumerWidget {
   const SearchPage({super.key});
 
   @override
-  State<SearchPage> createState() {
-    return _SearchPageState();
-  }
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final focusNode = useFocusNode();
+    final name = useState('');
+    final searchValueController = useTextEditingController();
+    final refreshController = useMemoized(
+      () => RefreshController(initialRefresh: false),
+    );
 
-class _SearchPageState extends State<SearchPage> {
-  FocusNode focusNode = new FocusNode();
-  String name = "";
-  final SearchValueController = TextEditingController();
-  final vm = SearchViewModel();
-  RefreshController _refreshController = RefreshController(
-    initialRefresh: false,
-  );
-  int _page = 1;
+    Future<void> onSearch(String value) async {
+      try {
+        FocusScope.of(context).unfocus();
+        Loading.showLoading();
+        final next = await ref.read(searchProvider.notifier).search(value);
+        if (next.isPageEnd) {
+          refreshController.loadNoData();
+        } else {
+          refreshController.resetNoData();
+        }
+      } catch (_) {
+      } finally {
+        Loading.dismissAll();
+      }
+    }
 
-  void _onRefresh() async {
-    _page = 1;
-    // monitor network fetch
-    await vm.search(name, _page);
-    // if failed,use refreshFailed()
-    _refreshController.refreshCompleted();
-  }
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final map = ModalRoute.of(context)?.settings.arguments;
+        if (map is! Map) {
+          return;
+        }
 
-  void _onLoading() async {
-    _page++;
-    // monitor network fetch
-    await vm.search(name, _page);
-    // if failed,use loadFailed(),if no data return,use LoadNodata()
-    if (mounted) setState(() {});
-
-    _refreshController.loadComplete();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      var map = ModalRoute.of(context)?.settings?.arguments;
-      if (map is Map) {
-        if (map["title"]?.toString().isNotEmpty == true) {
-          this.name = map["title"];
-          SearchValueController.text = map["title"];
-          setState(() {});
+        final routeTitle = map['title']?.toString() ?? '';
+        if (routeTitle.isNotEmpty) {
+          name.value = routeTitle;
+          searchValueController.text = routeTitle;
           Loading.showLoading();
-          onSearch(this.name);
+          onSearch(routeTitle);
         } else {
           FocusScope.of(context).requestFocus(focusNode);
         }
+      });
+      return refreshController.dispose;
+    }, const []);
+
+    Future<void> onRefresh() async {
+      final next = await ref.read(searchProvider.notifier).refresh();
+      refreshController.refreshCompleted();
+      if (next.isPageEnd) {
+        refreshController.loadNoData();
+      } else {
+        refreshController.resetNoData();
       }
-    });
-  }
+    }
 
-  void onSearch(String value) async {
-    _page = 1;
-    try {
-      // 隐藏软键盘
-      // SystemChannels.textInput.invokeMethod("TextInput.hide");
-      FocusScope.of(context).unfocus();
-      Loading.showLoading();
-      await vm.search(value, _page);
-    } catch (e) {}
-    Loading.dismissAll();
-  }
+    Future<void> onLoading() async {
+      final next = await ref.read(searchProvider.notifier).loadNextPage();
+      if (next.isPageEnd) {
+        refreshController.loadNoData();
+      } else {
+        refreshController.loadComplete();
+      }
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<SearchViewModel>(
-      create: (context) {
-        return vm;
-      },
-      child: Scaffold(
-        // appBar: AppBar(title: Text(this.name!),),
-        body: SafeArea(
-          bottom: false,
-          child: SmartRefresher(
-            controller: _refreshController,
-            enablePullDown: true,
-            enablePullUp: true,
-            onRefresh: _onRefresh,
-            onLoading: _onLoading,
-            header: MaterialClassicHeader(),
-            footer: ClassicFooter(loadingText: "正在加载中", failedText: "加载失败请重试"),
-            child: SingleChildScrollView(
-              child: Column(children: [_searchBar(), _searchList()]),
+    final searchState = ref.watch(searchProvider).asData?.value;
+    final searchList = searchState?.searchList ?? const [];
+
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: SmartRefresher(
+          controller: refreshController,
+          enablePullDown: true,
+          enablePullUp: true,
+          onRefresh: onRefresh,
+          onLoading: onLoading,
+          header: const MaterialClassicHeader(),
+          footer: const ClassicFooter(
+            loadingText: '正在加载中',
+            failedText: '加载失败请重试',
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _searchBar(
+                  context,
+                  focusNode: focusNode,
+                  name: name,
+                  searchValueController: searchValueController,
+                  onSearch: onSearch,
+                ),
+                _searchList(context, searchList),
+              ],
             ),
           ),
         ),
@@ -105,10 +114,16 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _searchBar() {
+  Widget _searchBar(
+    BuildContext context, {
+    required FocusNode focusNode,
+    required ValueNotifier<String> name,
+    required TextEditingController searchValueController,
+    required Future<void> Function(String value) onSearch,
+  }) {
     return Container(
       padding: EdgeInsets.all(10.w),
-      decoration: BoxDecoration(color: Color(0xff018b7d)),
+      decoration: const BoxDecoration(color: Color(0xff018b7d)),
       child: Row(
         spacing: 12.w,
         children: [
@@ -116,14 +131,13 @@ class _SearchPageState extends State<SearchPage> {
             onTap: () {
               RouteUtils.pop(context);
             },
-            child: Icon(Icons.chevron_left, size: 21, color: Colors.white),
+            child: const Icon(Icons.chevron_left, size: 21, color: Colors.white),
           ),
           Expanded(
             child: TextFormField(
-              controller: SearchValueController,
+              controller: searchValueController,
               onChanged: (val) {
-                SearchValueController.text = val;
-                name = val;
+                name.value = val;
               },
               focusNode: focusNode,
               keyboardType: TextInputType.text,
@@ -136,7 +150,7 @@ class _SearchPageState extends State<SearchPage> {
                 fillColor: Colors.white,
                 filled: true,
                 isCollapsed: true,
-                contentPadding: EdgeInsets.symmetric(
+                contentPadding: const EdgeInsets.symmetric(
                   horizontal: 8,
                   vertical: 5,
                 ),
@@ -148,64 +162,50 @@ class _SearchPageState extends State<SearchPage> {
                   borderSide: BorderSide(color: Colors.white, width: 0.5.w),
                   borderRadius: BorderRadius.all(Radius.circular(15.r)),
                 ),
-                labelText: "请输入",
-                labelStyle: TextStyle(color: Colors.black45),
+                labelText: '请输入',
+                labelStyle: const TextStyle(color: Colors.black45),
               ),
             ),
           ),
-          // GestureDetector(
-          //   onTap: (){
-          //
-          //   },
-          //   child: Text("取消", style: TextStyle(fontSize: 14, color: Colors.white),),
-          // ),
         ],
       ),
     );
   }
 
-  Widget _searchList() {
-    return Consumer<SearchViewModel>(
-      builder: (context, vm, child) {
-        return Container(
-          child: ListView.builder(
-            itemCount: vm.searchList.length,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  RouteUtils.pushNamed(
-                    context,
-                    RoutesPath.webviewPage,
-                    arguments: {
-                      "title": vm.searchList[index].title?.replaceAll(
-                        RegExp(r"<[^>]*>"),
-                        "",
+  Widget _searchList(BuildContext context, List<SearchModelDatas> searchList) {
+    return ListView.builder(
+      itemCount: searchList.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        final item = searchList[index];
+        return GestureDetector(
+          onTap: () {
+            RouteUtils.pushNamed(
+              context,
+              RoutesPath.webviewPage,
+              arguments: {
+                'title': item.title?.replaceAll(RegExp(r'<[^>]*>'), ''),
+                'url': item.link,
+              },
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              border: searchList.length - 1 == index
+                  ? null
+                  : Border(
+                      bottom: BorderSide(
+                        color: const Color(0x66000000),
+                        width: 1.w,
                       ),
-                      "url": vm.searchList[index].link,
-                    },
-                  );
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: vm.searchList.length - 1 == index
-                        ? null
-                        : Border(
-                            bottom: BorderSide(
-                              color: Color(0x66000000),
-                              width: 1.w,
-                            ),
-                          ),
-                  ),
-                  padding: EdgeInsets.fromLTRB(6.w, 10.w, 6.w, 10.w),
-                  child: Html(
-                    data: vm.searchList[index].title ?? "",
-                    style: {'html': Style(fontSize: FontSize(16.sp))},
-                  ),
-                ),
-              );
-            },
+                    ),
+            ),
+            padding: EdgeInsets.fromLTRB(6.w, 10.w, 6.w, 10.w),
+            child: Html(
+              data: item.title ?? '',
+              style: {'html': Style(fontSize: FontSize(16.sp))},
+            ),
           ),
         );
       },

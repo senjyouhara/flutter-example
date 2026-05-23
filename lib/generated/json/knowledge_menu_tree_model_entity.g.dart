@@ -1,5 +1,5 @@
 import 'package:example/generated/json/base/json_convert_content.dart';
-import 'package:example/pages/knowledge/knowledge_menuTree_model_entity.dart';
+import 'package:example/pages/knowledge/knowledge_menu_tree_model_entity.dart';
 
 KnowledgeMenuTreeModelEntity $KnowledgeMenuTreeModelEntityFromJson(
     Map<String, dynamic> json) {

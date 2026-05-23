@@ -1,61 +1,62 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:example/pages/personal/person_vm.dart';
 import 'package:example/routes/route_utils.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:install_plugin_v3/install_plugin_v3.dart';
-import 'package:oktoast/oktoast.dart';
-import 'package:provider/provider.dart';
 
 import '../../utils/filedir_path.dart';
 import '../../utils/request/request.dart';
 
 class UpdateDialog extends Dialog {
+  const UpdateDialog({
+    super.key,
+    required this.upDateContent,
+    required this.isForce,
+  });
+
   final String upDateContent;
   final bool isForce;
-
-  UpdateDialog({required this.upDateContent, required this.isForce});
 
   @override
   Widget build(BuildContext context) {
     return DialogContent(upDateContent: upDateContent, isForce: isForce);
   }
 
-  static showUpdateDialog(
+  static Future<T?> showUpdateDialog<T>(
     BuildContext context,
     String mUpdateContent,
     bool mIsForce,
-  ) async {
-    var canPop = await _onWillPop();
-
-    return showDialog(
+  ) {
+    return showDialog<T>(
       barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return PopScope(
-          child: UpdateDialog(upDateContent: mUpdateContent, isForce: mIsForce),
-          canPop: canPop,
+          canPop: false,
+          child: UpdateDialog(
+            upDateContent: mUpdateContent,
+            isForce: mIsForce,
+          ),
         );
       },
     );
   }
-
-  static Future<bool> _onWillPop() async {
-    return false;
-  }
 }
 
 class DialogContent extends StatefulWidget {
+  const DialogContent({
+    super.key,
+    required this.upDateContent,
+    required this.isForce,
+  });
+
   final String upDateContent;
   final bool isForce;
 
-  DialogContent({required this.upDateContent, required this.isForce});
-
   @override
-  _DialogContentState createState() => _DialogContentState();
+  State<DialogContent> createState() => _DialogContentState();
 }
 
 class _DialogContentState extends State<DialogContent> {
@@ -67,65 +68,54 @@ class _DialogContentState extends State<DialogContent> {
   String receivedMB = "0MB";
   bool isMain = true;
 
-  Future onDownloadFile() async {
+  Future<void> onDownloadFile() async {
     final localPath = await FileDirPath.prepareSaveDir();
-    String savePath = '$localPath/flutter-example-lastest.apk';
-    File savePathFile = new File(savePath);
+    final savePath = '$localPath/flutter-example-lastest.apk';
+    final savePathFile = File(savePath);
     if (!savePathFile.existsSync()) {
       await savePathFile.create();
     }
 
-    var pageUrl =
-        "https://github.com/senjyouhara/flutter-example/releases/download/lastest/flutter-example-lastest.apk";
+    const pageUrl =
+        'https://github.com/senjyouhara/flutter-example/releases/download/lastest/flutter-example-lastest.apk';
 
     try {
-
       await Request.download(
-        "$pageUrl",
+        pageUrl,
         savePath: savePath,
         options: Options(
-          receiveTimeout: Duration(days: 1),
-          sendTimeout: Duration(days: 1),
+          receiveTimeout: const Duration(days: 1),
+          sendTimeout: const Duration(days: 1),
           responseType: ResponseType.bytes,
           headers: {
-            HttpHeaders.refererHeader:
-            "https://github.com/senjyouhara/flutter-example/releases/download/lastest/flutter-example-lastest.apk",
+            HttpHeaders.refererHeader: pageUrl,
             HttpHeaders.userAgentHeader:
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                '(KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
           },
         ),
         onReceiveProgress: (rec, t) {
           total = t;
           received = rec;
-          precent = double.parse("${received / total}");
-          totalMB = (total / 1024 / 1024).toStringAsFixed(2) + "MB";
-          receivedMB = (received / 1024 / 1024).toStringAsFixed(2) + "MB";
-          precentString = (precent * 100).toStringAsFixed(1).toString() + "%";
-          print(
-            "received: ${received}, total :${total}, precent: ${(received / total * 100).toStringAsFixed(2)}",
-          );
+          precent = received / total;
+          totalMB = '${(total / 1024 / 1024).toStringAsFixed(2)}MB';
+          receivedMB = '${(received / 1024 / 1024).toStringAsFixed(2)}MB';
+          precentString = '${(precent * 100).toStringAsFixed(1)}%';
           setState(() {});
         },
       );
 
-      var result = await InstallPlugin.installApk(savePath);
-      print(
-        "apk install: ${result["isSuccess"] == true ? 'success' : 'faild${result['errorMessage'] ?? ''}'}",
-      );
-
-      if (result["isSuccess"] == true) {
-      } else {}
-
-    } catch (e) {
-      print("err : $e");
+      await InstallPlugin.installApk(savePath);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
       RouteUtils.pop(context);
-      // showToast("下载失败");
     }
-
   }
 
   Widget _mainContent() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -154,10 +144,6 @@ class _DialogContentState extends State<DialogContent> {
             height: 42.h,
             margin: EdgeInsets.only(bottom: 40.r),
             child: FilledButton(
-              child: Text(
-                '立即更新',
-                style: TextStyle(fontSize: 20.sp, color: Colors.white),
-              ),
               style: ButtonStyle(
                 backgroundColor: WidgetStateProperty.all(Colors.red),
                 shape: WidgetStateProperty.all(
@@ -172,6 +158,10 @@ class _DialogContentState extends State<DialogContent> {
                 });
                 await onDownloadFile();
               },
+              child: Text(
+                '立即更新',
+                style: TextStyle(fontSize: 20.sp, color: Colors.white),
+              ),
             ),
           ),
         ],
@@ -180,7 +170,7 @@ class _DialogContentState extends State<DialogContent> {
   }
 
   Widget _progressContent() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Column(
         children: <Widget>[
@@ -233,7 +223,7 @@ class _DialogContentState extends State<DialogContent> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Container(
+          SizedBox(
             width: 319.w,
             height: 350.h,
             child: Stack(

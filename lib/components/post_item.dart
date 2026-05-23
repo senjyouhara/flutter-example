@@ -1,5 +1,4 @@
 import 'package:example/extensions/image_extension.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -66,20 +65,18 @@ class PostItemWidget extends StatelessWidget {
               data.type == null ? SizedBox():
               data.type == 1
                   ? TextButton(
-                      onPressed: () {
-                        print("置顶");
-                      },
+                      onPressed: () {},
+                      style: ButtonStyle(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        minimumSize: WidgetStateProperty.all(Size(0, 0)),
+                        padding: WidgetStateProperty.all(EdgeInsets.zero),
+                      ),
                       child: Text(
                         "置顶",
                         style: TextStyle(
                           fontSize: 16.sp,
                           color: Colors.blueAccent,
                         ),
-                      ),
-                      style: ButtonStyle(
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        minimumSize: WidgetStateProperty.all(Size(0, 0)),
-                        padding: WidgetStateProperty.all(EdgeInsets.zero),
                       ),
                     )
                   : SizedBox(),

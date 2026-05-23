@@ -1,76 +1,60 @@
-import 'dart:developer';
-
+import 'package:example/pages/hot_key/friend_model_entity.dart';
+import 'package:example/pages/hot_key/hot_key_model_entity.dart';
 import 'package:example/pages/hot_key/hot_key_vm.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../components/loading.dart';
 import '../../routes/route_utils.dart';
 import '../../routes/routes.dart';
 
-class HotKeyPage extends StatefulWidget {
+class HotKeyPage extends HookConsumerWidget {
   const HotKeyPage({super.key});
 
   @override
-  State<HotKeyPage> createState() {
-    return _HotKeyPageState();
-  }
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hotKeyAsync = ref.watch(hotKeyProvider);
+    final hotKeyState = hotKeyAsync.asData?.value;
 
-class _HotKeyPageState extends State<HotKeyPage> {
-  HotKeyViewModel vm = HotKeyViewModel();
-
-  @override
-  void initState() {
-    super.initState();
-    init();
-  }
-
-  void init() async {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+    useEffect(() {
       Loading.showLoading();
-      try {
-        await vm.getFriendData();
-      } catch (e) {
+      return () {
+        Loading.dismissAll();
+      };
+    }, const []);
 
+    useEffect(() {
+      if (!hotKeyAsync.isLoading) {
+        Loading.dismissAll();
       }
-      try {
-        await vm.getHotKeyData();
-      } catch (e) {
+      return null;
+    }, [hotKeyAsync.isLoading]);
 
-      }
-      Loading.dismissAll();
-    });
-
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider<HotKeyViewModel>(
-      create: (context) {
-        return vm;
-      },
-      child: Scaffold(
-        body: SafeArea(
-          bottom: false,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [_searchBar(), _hotkeyGrid(), _friendGrid()],
-            ),
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _searchBar(context),
+              _hotkeyGrid(context, hotKeyState?.hotKeyData ?? const []),
+              _friendGrid(context, hotKeyState?.friendData ?? const []),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _searchBar() {
+  Widget _searchBar(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Color(0x66000000), width: 1.w),
-        ), // 边色与边宽度
+          bottom: BorderSide(color: const Color(0x66000000), width: 1.w),
+        ),
       ),
       child: SizedBox(
         width: double.infinity,
@@ -78,12 +62,11 @@ class _HotKeyPageState extends State<HotKeyPage> {
           children: [
             Expanded(
               child: Text(
-                "搜索热词",
+                '搜索热词',
                 style: TextStyle(fontSize: 14.sp, color: Colors.black),
               ),
             ),
             GestureDetector(
-              child: Icon(Icons.search, size: 24, color: Colors.black),
               onTap: () {
                 RouteUtils.pushNamed(
                   context,
@@ -91,6 +74,7 @@ class _HotKeyPageState extends State<HotKeyPage> {
                   arguments: {},
                 );
               },
+              child: const Icon(Icons.search, size: 24, color: Colors.black),
             ),
           ],
         ),
@@ -98,48 +82,50 @@ class _HotKeyPageState extends State<HotKeyPage> {
     );
   }
 
-  Widget _friendGrid() {
-    return Consumer<HotKeyViewModel>(
-      builder: (context, vm, child) {
-        return Column(
-          children: [
-            Container(
-              alignment: Alignment.centerLeft,
-              padding: EdgeInsets.only(top: 10.w, left: 10.w),
-              child: Text(
-                "常用网站",
-                style: TextStyle(fontSize: 14.sp, color: Colors.black, fontWeight: FontWeight.bold),
-              ),
+  Widget _friendGrid(BuildContext context, List<FriendModelEntity> items) {
+    return Column(
+      children: [
+        Container(
+          alignment: Alignment.centerLeft,
+          padding: EdgeInsets.only(top: 10.w, left: 10.w),
+          child: Text(
+            '常用网站',
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
             ),
-            gridList(vm.friendData.map((item)=> item.name ?? "").toList(), onTap: (name, index){
-              var link = vm.friendData[index].link;
-              RouteUtils.pushNamed(
-                context,
-                RoutesPath.webviewPage,
-                arguments: {"title": name, "url": link},
-              );
-            }),
-          ],
+          ),
+        ),
+        gridList(
+          items.map((item) => item.name ?? '').toList(),
+          onTap: (name, index) {
+            final link = items[index].link;
+            RouteUtils.pushNamed(
+              context,
+              RoutesPath.webviewPage,
+              arguments: {'title': name, 'url': link},
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _hotkeyGrid(BuildContext context, List<HotKeyModelEntity> items) {
+    return gridList(
+      items.map((item) => item.name ?? '').toList(),
+      onTap: (name, index) {
+        RouteUtils.pushNamed(
+          context,
+          RoutesPath.searchPage,
+          arguments: {'title': name},
         );
       },
     );
   }
 
-  Widget _hotkeyGrid() {
-    return Consumer<HotKeyViewModel>(
-      builder: (context, vm, child) {
-        return gridList(vm.hotKeyData.map((item)=> item.name ?? "").toList(), onTap: (name, index){
-          RouteUtils.pushNamed(
-            context,
-            RoutesPath.searchPage,
-            arguments: {"title": name},
-          );
-        });
-      },
-    );
-  }
-
-  Widget gridList(List<String> list, {void Function(String, int)? onTap}){
+  Widget gridList(List<String> list, {void Function(String, int)? onTap}) {
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         mainAxisSpacing: 10.r,
@@ -149,7 +135,7 @@ class _HotKeyPageState extends State<HotKeyPage> {
       ),
       itemBuilder: (context, index) {
         return GestureDetector(
-          onTap: (){
+          onTap: () {
             onTap?.call(list[index], index);
           },
           child: Container(
@@ -159,14 +145,14 @@ class _HotKeyPageState extends State<HotKeyPage> {
               borderRadius: BorderRadius.all(Radius.circular(10.r)),
               border: Border.all(color: Colors.grey),
             ),
-            child: Text(list[index] ?? ""),
+            child: Text(list[index]),
           ),
         );
       },
       padding: EdgeInsets.all(10.w),
       itemCount: list.length,
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
     );
   }
 }
