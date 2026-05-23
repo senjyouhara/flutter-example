@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Follow the repo's existing quality baseline for flutter analyze and targeted flutter test when designing hook and CI responsibilities."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Keep commit validation and CI enforcement on one reusable rule path instead of duplicating logic across scripts."}
+{"file":".trellis/tasks/05-23-add-lefthook-and-commit-message-enforcement/research/pre-commit-conventions.md","reason":"Use the researched Flutter/Dart conventions for splitting staged format, analyze, test, and CI checks across hook stages."}
+{"file":".trellis/tasks/05-23-add-lefthook-and-commit-message-enforcement/research/commit-message-conventions.md","reason":"Use the researched basis for Conventional Commits and commit-msg plus CI range validation parity."}

@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Verify the implemented hook and CI split still matches the repo's required analyze and test expectations."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check that local hooks and CI reuse the same validation entrypoints rather than drifting into parallel implementations."}
+{"file":".trellis/tasks/05-23-add-lefthook-and-commit-message-enforcement/research/pre-commit-conventions.md","reason":"Check the final hook placement against the researched fast pre-commit and heavier pre-push/CI convention."}
+{"file":".trellis/tasks/05-23-add-lefthook-and-commit-message-enforcement/research/commit-message-conventions.md","reason":"Check the final commit message enforcement and CI parity against the researched Conventional Commits recommendation."}
