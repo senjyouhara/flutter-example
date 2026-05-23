@@ -5,9 +5,11 @@ import 'dart:io' as io;
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
+import 'package:example/core/logger/logger.dart';
 import 'package:example/utils/request/cookie_interceptor.dart';
 import 'package:example/utils/request/request_interceptor.dart';
 import 'package:example/utils/request/resp_interceptor.dart';
+import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:flutter/services.dart';
 import 'base_model_entity.dart';
 
@@ -138,7 +140,16 @@ class Request {
       baseUrl: _baseUrl,
       // method: method ?? type,
     );
-    dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
+    dio.interceptors.add(
+      TalkerDioLogger(
+        talker: talker,
+        settings: const TalkerDioLoggerSettings(
+          printRequestHeaders: true,
+          printResponseHeaders: false,
+          printResponseMessage: true,
+        ),
+      ),
+    );
     dio.interceptors.add(CookieInterceptor());
     dio.interceptors.add(MyRequestInterceptor());
     dio.interceptors.add(MyResponseInterceptor());
@@ -180,9 +191,9 @@ class Request {
         data: data,
         queryParameters: queryParameters,
         options: (options ?? Options()).copyWith(
-            responseType: options?.responseType ?? ResponseType.bytes,
-            // followRedirects: false,
-            method: options?.method ?? method,
+          responseType: options?.responseType ?? ResponseType.bytes,
+          // followRedirects: false,
+          method: options?.method ?? method,
         ),
         cancelToken: cancelToken,
         onReceiveProgress: onReceiveProgress,
@@ -200,13 +211,22 @@ class Request {
     }
 
     var model = BaseModelEntity<T>();
-    if(url.startsWith("http")){
-      if(![ResponseType.json, ResponseType.plain].contains(response.requestOptions.responseType)) {
+    if (url.startsWith("http")) {
+      if (![
+        ResponseType.json,
+        ResponseType.plain,
+      ].contains(response.requestOptions.responseType)) {
         return model;
       }
     }
 
-    if(T == String || T == int || T == double || T == bool || T == Uint8List || T == List || (T.toString().startsWith('List<') && T.toString().endsWith('>')) ){
+    if (T == String ||
+        T == int ||
+        T == double ||
+        T == bool ||
+        T == Uint8List ||
+        T == List ||
+        (T.toString().startsWith('List<') && T.toString().endsWith('>'))) {
       model.data = response.data;
     } else {
       model = BaseModelEntity<T>.fromJson(response.data);
@@ -222,7 +242,7 @@ class Request {
     var withTrustedRoots = true;
     // 受信任的证书列表。
     List<ByteData> trustedCertificates = const [];
-    (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = (){
+    (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
       final client = HttpClient();
       client.findProxy = (url) {
         return "PROXY 192.168.0.102:8888";
@@ -232,15 +252,17 @@ class Request {
         return allowBadCert;
       };
       // 如果允许不良证书，直接返回创建的客户端。
-      if(allowBadCert){
+      if (allowBadCert) {
         return client;
       }
       // 否则，创建一个  SecurityContext ，并设置受信任的证书。
-      SecurityContext securityContext =
-      SecurityContext(withTrustedRoots: withTrustedRoots);
+      SecurityContext securityContext = SecurityContext(
+        withTrustedRoots: withTrustedRoots,
+      );
       for (var certificateBytes in trustedCertificates) {
-        securityContext
-            .setTrustedCertificatesBytes(certificateBytes.buffer.asUint8List());
+        securityContext.setTrustedCertificatesBytes(
+          certificateBytes.buffer.asUint8List(),
+        );
       }
       io.HttpClient httpClient = io.HttpClient(context: securityContext);
       return httpClient;

@@ -1,3 +1,5 @@
+import 'package:example/core/logger/logger.dart';
+import 'package:example/core/logger/talker_route_observer.dart';
 import 'package:example/pages/about/about_page.dart';
 import 'package:example/pages/hot_key/hot_key_page.dart';
 import 'package:example/pages/home/home_page.dart';
@@ -13,11 +15,13 @@ import 'package:example/pages/webview/webview_page.dart';
 import 'package:example/routes/route_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 class Routes {
   static final GoRouter router = GoRouter(
     navigatorKey: RouteUtils.navigatorKey,
     initialLocation: RoutesPath.index,
+    observers: [SentryNavigatorObserver(), TalkerRouteObserver(talker)],
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -72,9 +76,8 @@ class Routes {
       ),
       GoRoute(
         path: RoutesPath.searchPage,
-        builder: (context, state) => SearchPage(
-          initialKeyword: state.uri.queryParameters['q'] ?? '',
-        ),
+        builder: (context, state) =>
+            SearchPage(initialKeyword: state.uri.queryParameters['q'] ?? ''),
       ),
       GoRoute(
         path: RoutesPath.webviewPage,
@@ -102,9 +105,7 @@ class Routes {
     ],
     errorBuilder: (context, state) {
       return Scaffold(
-        body: SafeArea(
-          child: Center(child: Text('未知路由： ${state.uri}')),
-        ),
+        body: SafeArea(child: Center(child: Text('未知路由： ${state.uri}'))),
       );
     },
   );

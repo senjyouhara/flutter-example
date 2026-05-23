@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:example/core/logger/app_logger.dart';
 import 'package:path_provider/path_provider.dart';
 
 class FileDirPath {
@@ -22,9 +23,9 @@ class FileDirPath {
       try {
         downloadsDir = await getDownloadsDirectory();
         externalStorageDirPath = downloadsDir!.path;
-        print('externalStorageDirPath: $externalStorageDirPath');
+        AppLogger.chat('externalStorageDirPath: $externalStorageDirPath');
       } catch (err, st) {
-        print('failed to get downloads path: $err, $st');
+        AppLogger.chat('failed to get downloads path: $err, $st');
         final directory = await getExternalStorageDirectory();
         externalStorageDirPath = directory?.path;
       }
@@ -51,9 +52,8 @@ class FileDirPath {
       applicationSupport,
       library,
       applicationDocuments,
-      downloads
+      downloads,
     ];
     return dirs;
   }
-
 }
