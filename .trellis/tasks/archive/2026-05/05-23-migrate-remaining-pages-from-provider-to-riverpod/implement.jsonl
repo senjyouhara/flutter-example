@@ -1,0 +1,7 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Frontend stack and working rules for feature-local migration boundaries."}
+{"file":".trellis/spec/frontend/state-management.md","reason":"Current ownership rules for app-level auth state, feature-level state, and persisted session state."}
+{"file":".trellis/spec/frontend/hook-guidelines.md","reason":"When to use lifecycle methods versus hooks during migrated feature boundaries."}
+{"file":".trellis/spec/frontend/networking-and-api-contracts.md","reason":"Shared Request wrapper and response contract behavior must remain unchanged during migration."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Guardrails for scope control, request handling, and avoiding architecture drift."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"UI composition rules for touched page widgets."}
+{"file":".trellis/spec/frontend/directory-structure.md","reason":"Directory and file-placement expectations when renaming or relocating provider-shaped files."}

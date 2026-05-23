@@ -1,0 +1,5 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Verify final changes still match documented frontend stack expectations."}
+{"file":".trellis/spec/frontend/state-management.md","reason":"Check that global auth and feature ownership match the intended post-migration state rules."}
+{"file":".trellis/spec/frontend/hook-guidelines.md","reason":"Check that hooks stay in widget-local lifecycle/controller roles where used."}
+{"file":".trellis/spec/frontend/networking-and-api-contracts.md","reason":"Verify no request-contract regressions were introduced during migration."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Review against scope, consistency, and regression guardrails after implementation."}
