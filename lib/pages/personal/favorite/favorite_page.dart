@@ -82,11 +82,10 @@ class FavoritePage extends HookConsumerWidget {
                         onTap: () {
                           RouteUtils.pushNamed(
                             context,
-                            RoutesPath.webviewPage,
-                            arguments: {
-                              'title': item.title,
-                              'url': item.link,
-                            },
+                            RoutesPath.webviewPageLocation(
+                              title: item.title,
+                              url: item.link,
+                            ),
                           );
                         },
                         child: PostItemWidget(

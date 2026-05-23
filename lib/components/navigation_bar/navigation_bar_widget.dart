@@ -1,74 +1,35 @@
-
-
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 class LabelIcons {
+  const LabelIcons({required this.label, required this.icon});
 
-  String? label;
-  Widget? icon;
-  Widget? page;
-
-  LabelIcons({
-    String? label,
-    Widget? icon,
-    Widget? page
-}){
-    this.label = label;
-    this.icon = icon;
-    this.page = page;
-  }
-
+  final String label;
+  final Widget icon;
 }
 
-class NavigationBarWidget extends StatefulWidget {
-  const NavigationBarWidget({super.key,
-    required this.pages,
+class NavigationBarWidget extends StatelessWidget {
+  const NavigationBarWidget({
+    super.key,
+    required this.navigationShell,
+    required this.tabs,
     this.onTabChanged,
   });
 
-  final List<LabelIcons> pages;
-
+  final StatefulNavigationShell navigationShell;
+  final List<LabelIcons> tabs;
   final ValueChanged<int>? onTabChanged;
-
-  @override
-  State<NavigationBarWidget> createState() {
-    return _NavigationBarWidgetState();
-  }
-}
-
-class _NavigationBarWidgetState extends State<NavigationBarWidget> {
-
-  int index = 0;
-
-  @override
-  void didChangeDependencies() {
-    var map = ModalRoute.of(context)?.settings?.arguments;
-    if(map is Map){
-      this.index = map["index"];
-      setState(() {});
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: index,
-        children: widget.pages.map((item){
-          return item.page!;
-        }).toList(),
-      ),
+      body: navigationShell,
       bottomNavigationBar: Theme(
         data: ThemeData(
-          // 去掉水波纹效果
-          // splashColor: Colors.transparent,
-          // 去掉长按效果
           highlightColor: Colors.transparent,
         ),
         child: BottomNavigationBar(
-          currentIndex: index,
-          // 设置文字大小
+          currentIndex: navigationShell.currentIndex,
           selectedFontSize: 14,
           unselectedFontSize: 14,
           selectedItemColor: Colors.blue,
@@ -76,37 +37,21 @@ class _NavigationBarWidgetState extends State<NavigationBarWidget> {
           showSelectedLabels: true,
           showUnselectedLabels: true,
           type: BottomNavigationBarType.fixed,
-          items:  widget.pages.map((item) => BottomNavigationBarItem(
-            label: item.label,
-            icon: item.icon!,
-            tooltip: '',
-          )).toList(),
-          // [
-          //   BottomNavigationBarItem(
-          //     label: "首页",
-          //     icon: Icon(Icons.home, size: 24.sp),
-          //     tooltip: '',
-          //   ),
-          //   BottomNavigationBarItem(
-          //     label: "热点",
-          //     icon: Icon(Icons.local_fire_department, size: 24.sp),
-          //     tooltip: '',
-          //   ),
-          //   BottomNavigationBarItem(
-          //     label: "体系",
-          //     icon: Icon(Icons.timeline, size: 24.sp),
-          //     tooltip: '',
-          //   ),
-          //   BottomNavigationBarItem(
-          //     label: "我的",
-          //     icon: Icon(Icons.person, size: 24.sp),
-          //     tooltip: '',
-          //   ),
-          // ],
+          items: tabs
+              .map(
+                (item) => BottomNavigationBarItem(
+                  label: item.label,
+                  icon: item.icon,
+                  tooltip: '',
+                ),
+              )
+              .toList(),
           onTap: (index) {
-            this.index = index;
-            widget.onTabChanged?.call(index);
-            setState(() {});
+            onTabChanged?.call(index);
+            navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            );
           },
         ),
       ),

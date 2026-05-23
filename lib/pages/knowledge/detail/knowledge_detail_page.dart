@@ -13,30 +13,29 @@ import '../knowledge_menu_tree_model_entity.dart';
 import 'knowledge_detail_vm.dart';
 
 class KnowledgeDetailPage extends HookConsumerWidget {
-  const KnowledgeDetailPage({super.key});
+  const KnowledgeDetailPage({
+    super.key,
+    required this.pid,
+    required this.cid,
+    this.title,
+  });
+
+  final int? pid;
+  final int? cid;
+  final String? title;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final refreshController = useMemoized(
       () => RefreshController(initialRefresh: false),
     );
-    final title = useState<String?>(null);
-
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final map = ModalRoute.of(context)?.settings.arguments;
-        if (map is! Map) {
-          return;
-        }
-
-        title.value = map['title']?.toString();
-        final pid = map['id'];
-        final cid = map['cid'];
-        if (cid?.toString().isNotEmpty == true && pid != null && cid != null) {
+        if (pid != null && cid != null) {
           Loading.showLoading();
           await ref.read(knowledgeDetailProvider.notifier).initialize(
-                pid: pid as int,
-                cid: cid as int,
+                pid: pid!,
+                cid: cid!,
               );
           Loading.dismissAll();
         } else {
@@ -75,7 +74,7 @@ class KnowledgeDetailPage extends HookConsumerWidget {
     final listData = detailState?.listData ?? const [];
 
     return Scaffold(
-      appBar: AppBar(title: Text(title.value ?? '')),
+      appBar: AppBar(title: Text(title ?? '')),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -146,14 +145,13 @@ class KnowledgeDetailPage extends HookConsumerWidget {
                             onTap: () {
                               RouteUtils.pushNamed(
                                 context,
-                                RoutesPath.webviewPage,
-                                arguments: {
-                                  'title': item.title?.replaceAll(
+                                RoutesPath.webviewPageLocation(
+                                  title: item.title?.replaceAll(
                                     RegExp(r'<[^>]*>'),
                                     '',
                                   ),
-                                  'url': item.link,
-                                },
+                                  url: item.link,
+                                ),
                               );
                             },
                             child: Container(

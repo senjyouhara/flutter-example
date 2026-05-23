@@ -1,6 +1,5 @@
 import 'package:example/extensions/image_extension.dart';
 import 'package:example/routes/route_utils.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,6 +9,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../routes/routes.dart';
 
 class AboutPage extends StatefulWidget {
+  const AboutPage({super.key});
+
   @override
   State<StatefulWidget> createState() {
     return _AboutPageState();
@@ -21,18 +22,22 @@ class _AboutPageState extends State<AboutPage> {
 
   @override
   void initState() {
-    getVersion();
+    super.initState();
+    _getVersion();
   }
 
-  Future getVersion() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    _version = "v" + packageInfo.version;
+  Future<void> _getVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (!mounted) {
+      return;
+    }
+    _version = 'v${packageInfo.version}';
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    const HTML_TEXT = r"""<h2>软件介绍</h2>
+    const htmlText = r"""<h2>软件介绍</h2>
     <p>项目使用flutter进行开发，作为flutter学习过程产物，有可能有些bug未测试出来请见谅</p>
 		<p>软件api使用wanandroid.com开放api进行数据对接调试，<a href="https://wanandroid.com/blog/show/2">wanandroid.com</a></p>
 		<p>本app项目地址在 <a href="https://github.com/senjyouhara/flutter-example">flutter-example</a>  </p>
@@ -51,7 +56,7 @@ class _AboutPageState extends State<AboutPage> {
                 SvgPicture.asset("logo.svg".img, width: 70.r, height: 70.r),
                 Text(_version ?? "", style: TextStyle(fontSize: 16.sp)),
                 Html(
-                  data: HTML_TEXT,
+                  data: htmlText,
                   style: {
                     'html': Style(fontSize: FontSize(15.sp)),
                     'h2': Style(
@@ -63,8 +68,7 @@ class _AboutPageState extends State<AboutPage> {
                   onLinkTap: (url, attributes, element) {
                     RouteUtils.pushNamed(
                       context,
-                      RoutesPath.webviewPage,
-                      arguments: {"title": "关于我们", "url": url},
+                      RoutesPath.webviewPageLocation(title: '关于我们', url: url),
                     );
                   },
                 ),

@@ -52,22 +52,14 @@ class LoginPage extends HookConsumerWidget {
         if (!context.mounted) {
           return;
         }
-        RouteUtils.pushReplacementNamed(
-          context,
-          RoutesPath.index,
-          arguments: {'index': 3},
-        );
+        RouteUtils.pushReplacementNamed(context, RoutesPath.personal);
       } catch (_) {
         Loading.dismissAll();
       }
     }
 
     void onRegister() {
-      RouteUtils.pushReplacementNamed(
-        context,
-        RoutesPath.registerPage,
-        arguments: {},
-      );
+      RouteUtils.pushReplacementNamed(context, RoutesPath.registerPage);
     }
 
     return Scaffold(

@@ -18,9 +18,9 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   @override
-  void didChangeDependencies() async {
-    super.didChangeDependencies();
-    await PermissionUtil.getStoragePermission();
+  void initState() {
+    super.initState();
+    PermissionUtil.getStoragePermission();
   }
 
   @override
@@ -32,14 +32,12 @@ class _MyAppState extends State<MyApp> {
         child: ScreenUtilInit(
           designSize: designSize,
           builder: (context, child) {
-            return MaterialApp(
+            return MaterialApp.router(
               title: 'Flutter Demo',
               theme: ThemeData(
                 colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
               ),
-              // home: const TabbarPage(),
-              onGenerateRoute: Routes.generateRoutes,
-              initialRoute: RoutesPath.index,
+              routerConfig: Routes.router,
             );
           },
         ),

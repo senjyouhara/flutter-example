@@ -44,11 +44,7 @@ class PersonalPage extends HookConsumerWidget {
         child: GestureDetector(
           onTap: () {
             if (!authState.isLoggedIn) {
-              RouteUtils.pushNamed(
-                context,
-                RoutesPath.loginPage,
-                arguments: {},
-              );
+              RouteUtils.pushNamed(context, RoutesPath.loginPage);
             }
           },
           child: Column(
@@ -88,11 +84,7 @@ class PersonalPage extends HookConsumerWidget {
               ? getMenu(
                   '我的收藏',
                   onTap: () {
-                    RouteUtils.pushNamed(
-                      context,
-                      RoutesPath.favoritePage,
-                      arguments: {},
-                    );
+                    RouteUtils.pushNamed(context, RoutesPath.favoritePage);
                   },
                 )
               : const SizedBox(),
@@ -123,11 +115,7 @@ class PersonalPage extends HookConsumerWidget {
           getMenu(
             '关于我们',
             onTap: () {
-              RouteUtils.pushNamed(
-                context,
-                RoutesPath.aboutPage,
-                arguments: {},
-              );
+              RouteUtils.pushNamed(context, RoutesPath.aboutPage);
             },
           ),
           authState.isLoggedIn

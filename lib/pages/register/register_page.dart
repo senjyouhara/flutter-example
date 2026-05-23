@@ -24,11 +24,7 @@ class RegisterPage extends HookConsumerWidget {
     final rePasswordController = useTextEditingController();
 
     void onRegister() {
-      RouteUtils.pushReplacementNamed(
-        context,
-        RoutesPath.loginPage,
-        arguments: {},
-      );
+      RouteUtils.pushReplacementNamed(context, RoutesPath.loginPage);
     }
 
     Future<void> onSubmit() async {

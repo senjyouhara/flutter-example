@@ -74,12 +74,11 @@ class KnowledgePage extends HookConsumerWidget {
 
                           RouteUtils.pushNamed(
                             context,
-                            RoutesPath.knowledgeDetailPage,
-                            arguments: {
-                              'id': item.id,
-                              'cid': children.first.id,
-                              'title': item.name,
-                            },
+                            RoutesPath.knowledgeDetailPageLocation(
+                              pid: item.id!,
+                              cid: children.first.id!,
+                              title: item.name,
+                            ),
                           );
                         },
                         child: Container(

@@ -71,7 +71,6 @@ class HotKeyPage extends HookConsumerWidget {
                 RouteUtils.pushNamed(
                   context,
                   RoutesPath.searchPage,
-                  arguments: {},
                 );
               },
               child: const Icon(Icons.search, size: 24, color: Colors.black),
@@ -103,8 +102,7 @@ class HotKeyPage extends HookConsumerWidget {
             final link = items[index].link;
             RouteUtils.pushNamed(
               context,
-              RoutesPath.webviewPage,
-              arguments: {'title': name, 'url': link},
+              RoutesPath.webviewPageLocation(title: name, url: link),
             );
           },
         ),
@@ -118,8 +116,7 @@ class HotKeyPage extends HookConsumerWidget {
       onTap: (name, index) {
         RouteUtils.pushNamed(
           context,
-          RoutesPath.searchPage,
-          arguments: {'title': name},
+          RoutesPath.searchPageLocation(keyword: name),
         );
       },
     );

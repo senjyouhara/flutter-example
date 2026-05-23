@@ -12,7 +12,9 @@ import '../../routes/routes.dart';
 import 'search_model_entity.dart';
 
 class SearchPage extends HookConsumerWidget {
-  const SearchPage({super.key});
+  const SearchPage({super.key, this.initialKeyword = ''});
+
+  final String initialKeyword;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,17 +43,10 @@ class SearchPage extends HookConsumerWidget {
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final map = ModalRoute.of(context)?.settings.arguments;
-        if (map is! Map) {
-          return;
-        }
-
-        final routeTitle = map['title']?.toString() ?? '';
-        if (routeTitle.isNotEmpty) {
-          name.value = routeTitle;
-          searchValueController.text = routeTitle;
-          Loading.showLoading();
-          onSearch(routeTitle);
+        if (initialKeyword.isNotEmpty) {
+          name.value = initialKeyword;
+          searchValueController.text = initialKeyword;
+          onSearch(initialKeyword);
         } else {
           FocusScope.of(context).requestFocus(focusNode);
         }
@@ -183,11 +178,10 @@ class SearchPage extends HookConsumerWidget {
           onTap: () {
             RouteUtils.pushNamed(
               context,
-              RoutesPath.webviewPage,
-              arguments: {
-                'title': item.title?.replaceAll(RegExp(r'<[^>]*>'), ''),
-                'url': item.link,
-              },
+              RoutesPath.webviewPageLocation(
+                title: item.title?.replaceAll(RegExp(r'<[^>]*>'), ''),
+                url: item.link,
+              ),
             );
           },
           child: Container(
