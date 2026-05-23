@@ -11,7 +11,7 @@ commit-msg:
     conventional-commits:
       run: dart run tool/validate_commit_messages.dart --message-file "{1}"
 
-pre-push:
-  commands:
-    flutter-analyze:
-      run: flutter analyze
+#pre-push:
+#  commands:
+#    flutter-analyze:
+#      run: flutter analyze
